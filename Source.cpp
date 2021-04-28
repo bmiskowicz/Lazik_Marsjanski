@@ -2,14 +2,20 @@
 #include "includes/glut.h"
 #include "includes/GL.H"
 #include <cmath>
+#include "interpreter.h"
+#include <stdio.h>
 
 // angle of rotation for the camera direction
 float angle = 0.0;
 // actual vector representing the camera's direction
 float lx = 0.0f, lz = -1.0f, ly = 0.0f;
 // XZ position of the camera
-float x = 120.0f, z = 100.0f, y = 80.0f;
+float x = 12.0f, z = 10.0f, y = 8.0f;
 #define GL_PI 3.14
+Interpreter textures = Interpreter("tekstury.obj");
+Interpreter cube = Interpreter("cube.obj");
+Interpreter monkey = Interpreter("monkey.obj");
+
 
 void changeSize(int w, int h) 
 {
@@ -346,52 +352,60 @@ void renderScene(void) {
 
 	// Clear Color and Depth Buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);
 	// Reset transformations
 	glLoadIdentity();
 	// Set the camera
 	gluLookAt(x, y, z, x + lx, y + ly, z + lz, 0.0f, 1.0f, 0.0f);
 	
-	cuboid(0.0f, 50.0f, 0.0f, 100.0f, 20.0f, 50.0f, 0.5 , 0.5, 0.5);
-	cylinder(3.0f, 10.0f, 47.0f, 0.0f, 50.0f, 0.3, 0.3, 0.3, 20, 0);
-	cylinder(3.0f, 50.0f, 47.0f, 0.0f, 50.0f, 0.3, 0.3, 0.3, 20, 0);
-	cylinder(3.0f, 90.0f, 47.0f, 0.0f, 50.0f, 0.3, 0.3, 0.3, 20, 0);
+	cuboid(0.0f, 5.0f, 0.0f, 10.0f, 2.0f, 5.0f, 0.5 , 0.5, 0.5);
+	cylinder(0.3f, 1.0f, 4.7f, 0.0f, 5.0f, 0.3, 0.3, 0.3, 20, 0);
+	cylinder(0.3f, 5.0f, 4.7f, 0.0f, 5.0f, 0.3, 0.3, 0.3, 20, 0);
+	cylinder(0.3f, 9.0f, 4.7f, 0.0f, 5.0f, 0.3, 0.3, 0.3, 20, 0);
 
 
-	axle(3.0f, 10.0f, 47.0f, 50.0f, 10.0f, 15.0f, 0.2, 0.2, 0.2, 20);
-	axle(3.0f, 50.0f, 47.0f, 50.0f, 10.0f, 15.0f, 0.2, 0.2, 0.2, 20);
-	axle(3.0f, 90.0f, 47.0f, 50.0f, 10.0f, 15.0f, 0.2, 0.2, 0.2, 20);
+	axle(0.3f, 1.0f, 4.7f, 5.0f, 1.0f, 1.5f, 0.2, 0.2, 0.2, 20);
+	axle(0.3f, 5.0f, 4.7f, 5.0f, 1.0f, 1.5f, 0.2, 0.2, 0.2, 20);
+	axle(0.3f, 9.0f, 4.7f, 5.0f, 1.0f, 1.5f, 0.2, 0.2, 0.2, 20);
 
-	wheel(10.0f, 10.0f, 32.0f, 60.0f, 10.0f, 0.0, 0.0, 0.0, 5);
-	wheel(10.0f, 50.0f, 32.0f, 60.0f, 10.0f, 0.0, 0.0, 0.0, 5);
-	wheel(10.0f, 90.0f, 32.0f, 60.0f, 10.0f, 0.0, 0.0, 0.0, 5);
-
-
-	axle(3.0f, 10.0f, 47.0f, 0.0f, -10.0f, 15.0f, 0.2, 0.2, 0.2, 20);
-	axle(3.0f, 50.0f, 47.0f, 0.0f, -10.0f, 15.0f, 0.2, 0.2, 0.2, 20);
-	axle(3.0f, 90.0f, 47.0f, 0.0f, -10.0f, 15.0f, 0.2, 0.2, 0.2, 20);
-
-	wheel(10.0f, 10.0f, 32.0f, -20.0f, 10.0f, 0.0, 0.0, 0.0, 5);
-	wheel(10.0f, 50.0f, 32.0f, -20.0f, 10.0f, 0.0, 0.0, 0.0, 5);
-	wheel(10.0f, 90.0f, 32.0f, -20.0f, 10.0f, 0.0, 0.0, 0.0, 5);
+	wheel(1.0f, 1.0f, 3.2f, 6.0f, 1.0f, 0.0, 0.0, 0.0, 5);
+	wheel(1.0f, 5.0f, 3.2f, 6.0f, 1.0f, 0.0, 0.0, 0.0, 5);
+	wheel(1.0f, 9.0f, 3.2f, 6.0f, 1.0f, 0.0, 0.0, 0.0, 5);
 
 
-	cylinder(1.0f, 30.0f, 35.0f, 70.0f, 20.0f, 0.3, 0.3, 0.3, 20, 1);
-	cylinder(1.0f, 30.0f, 35.0f, 90.0f, 2.0f, 0.9, 0.0, 0.0, 20, 1);
+	axle(0.3f, 0.9f, 4.7f, 0.0f, -1.0f, 1.5f, 0.2, 0.2, 0.2, 20);
+	axle(0.3f, 4.9f, 4.7f, 0.0f, -1.0f, 1.5f, 0.2, 0.2, 0.2, 20);
+	axle(0.3f, 8.9f, 4.7f, 0.0f, -1.0f, 1.5f, 0.2, 0.2, 0.2, 20);
+
+	wheel(1.0f, 0.9f, 3.2f, -2.0f, 1.0f, 0.0, 0.0, 0.0, 5);
+	wheel(1.0f, 4.9f, 3.2f, -2.0f, 1.0f, 0.0, 0.0, 0.0, 5);
+	wheel(1.0f, 8.9f, 3.2f, -2.0f, 1.0f, 0.0, 0.0, 0.0, 5);
 
 
-	cylinder(1.0f, 90.0f, 5.0f, 70.0f, 20.0f, 0.3, 0.3, 0.3, 20, 1);
-	cone(1.0f, 90.0f, 5.0f, 90.0f, 2.0f, 0.3, 0.3, 0.3, 20);
-	antenna(5.0f, 5.0f, 92.0f, 90.0f, 3.0f, 0.2, 0.2, 0.2, 20);
-
-	cylinder(1.0f, 90.0f, 45.0f, 70.0f, 20.0f, 0.3, 0.3, 0.3, 20, 1);
-	cone(1.0f, 90.0f, 45.0f, 90.0f, 2.0f, 0.3, 0.3, 0.3, 20);
-	antenna(5.0f, 45.0f, 92.0f, 90.0f, 3.0f, 0.2, 0.2, 0.2, 20);
+	cylinder(0.1f, 3.0f, 3.5f, 7.0f, 2.0f, 0.3, 0.3, 0.3, 20, 1);
+	cylinder(0.1f, 3.0f, 3.5f, 9.0f, 0.2f, 0.9, 0.0, 0.0, 20, 1);
 
 
-	cylinder(1.0f, 90.0f, 25.0f, 70.0f, 5.0f, 0.3, 0.3, 0.3, 20, 1);
-	cuboid(85.0f, 75.0f, 22.5f, 15.0f, 5.0f, 5.0f, 0.5, 0.5, 0.5);
-	cylinder(1.0f, 25.0f, 77.5f, 100.0f, 2.0f, 0.1, 0.1, 0.1, 20, 2);
+	cylinder(0.1f, 9.0f, 0.5f, 7.0f, 2.0f, 0.3, 0.3, 0.3, 20, 1);
+	cone(0.1f, 9.0f, 0.5f, 9.0f, 0.2f, 0.3, 0.3, 0.3, 20);
+	antenna(0.7f, 0.5f, 9.2f, 9.0f, 0.5f, 0.2, 0.2, 0.2, 20);
+
+	cylinder(0.1f, 9.0f, 4.5f, 7.0f, 2.0f, 0.3, 0.3, 0.3, 20, 1);
+	cone(0.1f, 9.0f, 4.5f, 9.0f, 0.2f, 0.3, 0.3, 0.3, 20);
+	antenna(0.7f, 4.5f, 9.2f, 9.0f, 0.5f, 0.2, 0.2, 0.2, 20);
+
+
+	cylinder(0.1f, 9.0f, 2.5f, 7.0f, 0.5f, 0.3, 0.3, 0.3, 20, 1);
+	cuboid(8.5f, 7.5f, 2.25f, 1.5f, 0.5f, 0.5f, 0.5, 0.5, 0.5);
+	cylinder(0.1f, 2.5f, 7.75f, 10.0f, 0.2f, 0.1, 0.1, 0.1, 20, 2);
+
+	
+	glColor3f(0.7, 0.3, 0.2);
+	textures.Draw();
+	glColor3f(0.2, 0.4, 0.4);
+	monkey.Draw();
+	glColor3f(0, 0, 0);
+	cube.Draw();
 
 
 	glutSwapBuffers();
