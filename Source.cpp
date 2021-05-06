@@ -2,10 +2,11 @@
 #include "includes/glut.h"
 #include "includes/GL.H"
 #include <cmath>
-#include "interpreter.h"
 #include <stdio.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "interpreter.h"
+#include "Lazik.h"
 
 // angle of rotation for the camera direction
 float angle = 0.0;
@@ -19,7 +20,7 @@ int width, height, nrChannels;
 
 Interpreter textures = Interpreter("tekstury.obj");
 Interpreter cube = Interpreter("cube.obj");
-Interpreter monkey = Interpreter("monkey.obj");
+Interpreter monkey = Interpreter("Icosphere.obj");
 
 
 void init(unsigned char* data)
@@ -423,11 +424,11 @@ void renderScene(void) {
 	cylinder(0.1f, 2.5f, 7.75f, 10.0f, 0.2f, 0.1, 0.1, 0.1, 20, 2);
 
 	glColor3f(1.0, 1.0, 1.0);
-	init(stbi_load("texture.jpg", &width, &height, &nrChannels, 0));
+	init(stbi_load("textures.jpg", &width, &height, &nrChannels, 0));
 	textures.DrawT();
 	glDeleteTextures(1, &textureName);
 
-	init(stbi_load("monkey.jpg", &width, &height, &nrChannels, 0));
+	init(stbi_load("stone.jpg", &width, &height, &nrChannels, 0));
 	monkey.DrawT();
 	glDeleteTextures(1, &textureName);
 

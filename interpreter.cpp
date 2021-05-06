@@ -60,9 +60,9 @@ void Interpreter::DrawT()
 
 		glTexCoord2f(0.0, 0.0);
 		glVertex3f(a.x, a.y, a.z);//Draw triangle
-		glTexCoord2f(0.0, 1.0);
+		glTexCoord2f(1.0, 0.0);
 		glVertex3f(b.x, b.y, b.z);
-		glTexCoord2f(1.0, 1.0);
+		glTexCoord2f(0.0, 1.0);
 		glVertex3f(c.x, c.y, c.z);
 	}
 	glEnd();
