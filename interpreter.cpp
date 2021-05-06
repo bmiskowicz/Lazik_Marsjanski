@@ -16,7 +16,6 @@ Interpreter::Interpreter(string filename)
 			Point.push_back(y);
 			Point.push_back(z);
 			v.push_back(Point);
-
 		}
 		if (line.substr(0, 1) == "f")
 		{
@@ -58,7 +57,7 @@ void Interpreter::DrawT()
 		c.y = (v[thirdVertexIndex])[1];
 		c.z = (v[thirdVertexIndex])[2];
 
-		glTexCoord2f(0.0, 0.0);
+		glTexCoord2f(0.0, 0.0);	//texturing
 		glVertex3f(a.x, a.y, a.z);//Draw triangle
 		glTexCoord2f(1.0, 0.0);
 		glVertex3f(b.x, b.y, b.z);
@@ -66,8 +65,7 @@ void Interpreter::DrawT()
 		glVertex3f(c.x, c.y, c.z);
 	}
 	glEnd();
-	glDisable(GL_TEXTURE_2D);
-
+	glDisable(GL_TEXTURE_2D); // turn of texture mode
 }
 
 void Interpreter::Draw()
