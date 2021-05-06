@@ -19,6 +19,7 @@ public:
 		float z;
 	};
 	Interpreter(string filename);//Read function
+	void DrawT();//Drawing function
 	void Draw();//Drawing function
 private:
 	vector<vector<GLfloat>> v;//Store vertex (x,y,z) coordinates
