@@ -1,0 +1,3 @@
+Oba polecenia - merge oraz rebase służą do łączenia gałęzi, jednak merge pozwala utrzymać
+historię comitów z zachowaniem ich kolejności na branchach tworząc drzewiastą strukturę. Po użyciu
+rebase historia comitów z łączonych gałęzi nie utworzy drzewiastej struktury, a 'liniową'.
