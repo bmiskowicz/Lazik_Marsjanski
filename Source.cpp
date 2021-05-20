@@ -9,7 +9,7 @@
 #include "Lazik.h"
 
 // angle of rotation for the camera direction
-float angle = 0.0;
+float camera_angle = 0.0;
 // actual vector representing the camera's direction
 float lx = 0.0f, lz = -1.0f, ly = 0.0f;
 // XZ position of the camera
@@ -17,11 +17,16 @@ float x = 12.0f, z = 10.0f, y = 8.0f;
 #define GL_PI 3.14
 static GLuint textureName;
 int width, height, nrChannels;
-
+//objects from blender
 Interpreter textures = Interpreter("tekstury.obj");
 Interpreter cube = Interpreter("cube.obj");
 Interpreter icosphere = Interpreter("Icosphere.obj");
-
+//coordinates of rover
+float pos_x = 0;
+float pos_z = 0;
+float phrase = 0.2; 
+int angle = 0;
+float rotation = 0;
 
 void init(unsigned char* data)
 {
@@ -61,14 +66,14 @@ void processSpecialKeys(int key, int xx, int yy) {
 
 	switch (key) {
 	case GLUT_KEY_LEFT:	//obrót w lewo
-		angle -= 0.1f;
-		lx = sin(angle);
-		lz = -cos(angle);
+		camera_angle -= 0.1f;
+		lx = sin(camera_angle);
+		lz = -cos(camera_angle);
 		break;
 	case GLUT_KEY_RIGHT:	//obrót w prawo
-		angle += 0.1f;
-		lx = sin(angle);
-		lz = -cos(angle);
+		camera_angle += 0.1f;
+		lx = sin(camera_angle);
+		lz = -cos(camera_angle);
 		break;
 	case GLUT_KEY_UP:	//ruch do przodu
 		y += ly;
@@ -89,6 +94,50 @@ void processSpecialKeys(int key, int xx, int yy) {
 	}
 }
 
+void processKeyboardKeys(unsigned char key, int x, int y)
+{
+	switch (key) {
+	case 'w':
+		if (phrase < 0.7)
+		{
+			phrase = phrase + 0.05;
+		}			
+		if (angle == 0) pos_x += phrase;
+		else
+		{
+			pos_x += sin(angle) * rotation * phrase;
+			pos_z += -cos(angle) * rotation * phrase;
+		}
+		break;
+	case 's':
+		if (phrase < 0.7)
+		{
+			phrase = phrase + 0.05;
+		}
+		if (angle == 0) pos_x -= phrase;
+		else
+		{
+			pos_x -= sin(angle) * rotation * phrase;
+			pos_z -= -cos(angle) * rotation * phrase;
+		}
+		break;
+	case 'd':
+		if (angle < 40)
+		{
+			angle += 0.2;
+			rotation = tan(angle) * 0.8;
+		}
+		break;
+	case 'a':
+		if (angle > -40)
+		{
+			angle -= 0.2;
+			rotation = tan(angle) * 0.8;
+		}
+		break;
+	}
+}
+
 void renderScene(void) {
 	// Clear Color and Depth Buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -97,8 +146,6 @@ void renderScene(void) {
 	glLoadIdentity();
 	// Set the camera
 	gluLookAt(x, y, z, x + lx, y + ly, z + lz, 0.0f, 1.0f, 0.0f);
-
-	Lazik Marsjanski = Lazik();
 
 	glColor3f(1.0, 1.0, 1.0);
 	init(stbi_load("textures.jpg", &width, &height, &nrChannels, 0));
@@ -111,26 +158,32 @@ void renderScene(void) {
 
 	glColor3f(0, 0, 0);
 	cube.Draw();
-	
+
+	glPushMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glTranslatef(pos_x, 0.0, pos_z);
+	Lazik Marsjanski = Lazik();
+
+
+	glPopMatrix();
 	glutSwapBuffers();
 }
 
 int main(int argc, char** argv) 
 {
-
 	// init GLUT and create window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(1080, 860);
 	glutCreateWindow("£azik Marsjañski");
-	//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	// register callbacks
 	glutDisplayFunc(renderScene);
 	glutReshapeFunc(changeSize);
 	glutIdleFunc(renderScene);
 	// here are the new entries
 	glutSpecialFunc(processSpecialKeys);
+	glutKeyboardFunc(processKeyboardKeys);
 	// OpenGL init
 	glEnable(GL_DEPTH_TEST);
 	// enter GLUT event processing cycle
