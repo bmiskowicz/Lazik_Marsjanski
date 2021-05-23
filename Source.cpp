@@ -13,7 +13,7 @@ float camera_angle = 0.0;
 // actual vector representing the camera's direction
 float lx = 0.0f, lz = -1.0f, ly = 0.0f;
 // XZ position of the camera
-float x = 12.0f, z = 10.0f, y = 8.0f;
+float x = 12.0f, z = 10.0f, y = 15.0f;
 #define GL_PI 3.14
 static GLuint textureName;
 int width, height, nrChannels;
@@ -25,8 +25,11 @@ Interpreter icosphere = Interpreter("Icosphere.obj");
 float pos_x = 0;
 float pos_z = 0;
 float phrase = 0.2; 
-int angle = 0;
+float angle = 1.6;
+float act_angle = 1.6;
 float rotation = 0;
+float move_rotation = 0;
+float old_rotation = 0;
 
 void init(unsigned char* data)
 {
@@ -96,43 +99,56 @@ void processSpecialKeys(int key, int xx, int yy) {
 
 void processKeyboardKeys(unsigned char key, int x, int y)
 {
+	cout << angle << endl;
 	switch (key) {
 	case 'w':
+		move_rotation = rotation;
 		if (phrase < 0.7)
 		{
 			phrase = phrase + 0.05;
 		}			
-		if (angle == 0) pos_x += phrase;
+		if (angle == 0)	pos_x += phrase;
 		else
 		{
-			pos_x += sin(angle) * rotation * phrase;
-			pos_z += -cos(angle) * rotation * phrase;
+			pos_x += sin(angle) * phrase;
+			pos_z += -cos(angle) * phrase;
 		}
 		break;
 	case 's':
+		move_rotation = rotation;
 		if (phrase < 0.7)
 		{
 			phrase = phrase + 0.05;
 		}
-		if (angle == 0) pos_x -= phrase;
+		if (angle == 0)	pos_x -= phrase;
 		else
 		{
-			pos_x -= sin(angle) * rotation * phrase;
-			pos_z -= -cos(angle) * rotation * phrase;
+			pos_x -= sin(angle) * phrase;
+			pos_z -= -cos(angle) * phrase;
 		}
 		break;
 	case 'd':
-		if (angle < 40)
+		if (angle < 4.76)
 		{
-			angle += 0.2;
-			rotation = tan(angle) * 0.8;
+			angle += 0.05;
+			rotation = (360 - 0) * (-angle + 1.6) / (4.8 + 1.6) + 0;
+		}
+		else if (angle > 4.76)
+		{
+			angle = -1.6;
+			rotation = (360 - 0) * (-angle + 1.6) / (4.8 + 1.6) + 0;
 		}
 		break;
 	case 'a':
-		if (angle > -40)
+		if (angle > -1.56)
 		{
-			angle -= 0.2;
-			rotation = tan(angle) * 0.8;
+			angle -= 0.05;
+			rotation = (360 - 0) * (-angle + 1.6) / (4.8 + 1.6) + 0;
+		}
+		else if (angle < -1.56)
+		{
+			angle = 4.8;
+			rotation = (360 - 0) * (-angle + 1.6) / (4.8 + 1.6) + 0;
 		}
 		break;
 	}
@@ -159,13 +175,62 @@ void renderScene(void) {
 	glColor3f(0, 0, 0);
 	cube.Draw();
 
+
 	glPushMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glTranslatef(pos_x, 0.0, pos_z);
+	glRotatef(move_rotation, 0, 1, 0);
+	glTranslatef(0.0, 0.0, 0.0);
 	Lazik Marsjanski = Lazik();
-
-
 	glPopMatrix();
+
+
+
+	if (rotation == move_rotation)
+	{
+		glPushMatrix();
+		glTranslatef(pos_x, 0.0, pos_z);
+		glRotatef(move_rotation, 0, 1, 0);
+		glTranslatef(0.0, 0.0, 0.0);
+		Marsjanski.wheel1();
+		glPopMatrix();
+
+
+		glPushMatrix();
+		glTranslatef(pos_x, 0.0, pos_z);
+		glRotatef(move_rotation, 0, 1, 0);
+		glTranslatef(0.0, 0.0, 0.0);
+		Marsjanski.wheel2();
+		glPopMatrix();
+	}
+	else
+	{
+		glPushMatrix();
+		glTranslatef(pos_x, 0.0, pos_z);
+		glRotatef(move_rotation, 0, 1, 0);
+		glTranslatef(0.0, 0.0, 0.0);
+
+		glTranslatef(9.0, 0.0, 3.5);
+		glRotatef(rotation, 0, 1, 0);
+		glTranslatef(-9.0, 0.0, -3.5);
+		Marsjanski.wheel1();
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(pos_x, 0.0, pos_z);
+		glRotatef(move_rotation, 0, 1, 0);
+		glTranslatef(0.0, 0.0, 0.0);
+
+		glTranslatef(9.0f, 0.0, -4.5f);
+		glRotatef(rotation, 0, 1, 0);
+		glTranslatef(-9.0f, 0.0, 4.5f);
+		Marsjanski.wheel2();
+		glPopMatrix();
+	}
+
+
+
+	//gluLookAt(x, y, z, x + lx, y + ly, z + lz, 0.0f, 1.0f, 0.0f);
 	glutSwapBuffers();
 }
 

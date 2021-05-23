@@ -18,4 +18,6 @@ public:
 	void wheel(float R, float x, float y, float z, float length, float red, float green, float blue, int base);
 	void cone(float R, float x, float y, float z, float height, float red, float green, float blue, int base);
 	void antenna(float R, float x, float y, float z, float height, float red, float green, float blue, int base);
+	void wheel1();
+	void wheel2();
 };
