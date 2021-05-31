@@ -8,28 +8,40 @@
 #include "interpreter.h"
 #include "Lazik.h"
 
-// angle of rotation for the camera direction
-float camera_angle = 0.0;
-// actual vector representing the camera's direction
-float lx = 0.0f, lz = -1.0f, ly = 0.0f;
-// XZ position of the camera
-float x = 12.0f, z = 10.0f, y = 15.0f;
 #define GL_PI 3.14
+
+// angle of rotation for the camera direction
+float camera_angle = 1.5;
+// actual vector representing the camera's direction
+float lx = 1.0f, lz = 0.0f, ly = -0.5f;
+// XZ position of the camera
+float x = 0.0f, z = 0.0f, y = 15.0f;
 static GLuint textureName;
 int width, height, nrChannels;
 //objects from blender
 Interpreter textures = Interpreter("tekstury.obj");
 Interpreter cube = Interpreter("cube.obj");
 Interpreter icosphere = Interpreter("Icosphere.obj");
-//coordinates of rover
+
+//rover's x and y coordinates
 float pos_x = 0;
 float pos_z = 0;
-float phrase = 0.2; 
-float angle = 1.6;
-float act_angle = 1.6;
-float rotation = 0;
-float move_rotation = 0;
-float old_rotation = 0;
+
+//rover's rotation variables
+float turning_angle = 0.0;
+float rover_angle = 0.0;
+float rotation = 0.0;
+
+//rover velocities
+float speed = 0.0;
+float angular_speed = 0.0;
+
+//antennas' rotation variable
+float antenna_rotation = 0.0;
+float antenna_angle = 0.0;
+
+//variable for diode
+int diode_time = 0;;
 
 void init(unsigned char* data)
 {
@@ -68,30 +80,31 @@ void changeSize(int w, int h)
 void processSpecialKeys(int key, int xx, int yy) {
 
 	switch (key) {
-	case GLUT_KEY_LEFT:	//obrót w lewo
+	case GLUT_KEY_LEFT:	//turn left
 		camera_angle -= 0.1f;
 		lx = sin(camera_angle);
 		lz = -cos(camera_angle);
 		break;
-	case GLUT_KEY_RIGHT:	//obrót w prawo
+	case GLUT_KEY_RIGHT:	//turn right
 		camera_angle += 0.1f;
+		cout << camera_angle << endl;
 		lx = sin(camera_angle);
 		lz = -cos(camera_angle);
 		break;
-	case GLUT_KEY_UP:	//ruch do przodu
+	case GLUT_KEY_UP:	//move forward
 		y += ly;
 		x += lx;
 		z += lz;
 		break;
-	case GLUT_KEY_DOWN:	//ruch do ty³u
+	case GLUT_KEY_DOWN:	//move backward
 		y -= ly;
 		x -= lx;
 		z -= lz;
 		break;
-	case GLUT_KEY_F1:	//obrót w górê
+	case GLUT_KEY_F1:	//turn up
 		ly +=0.1f;
 		break;
-	case GLUT_KEY_F2:	//obrót w dó³
+	case GLUT_KEY_F2:	//turn down
 		ly -= 0.1f;
 		break;
 	}
@@ -99,59 +112,42 @@ void processSpecialKeys(int key, int xx, int yy) {
 
 void processKeyboardKeys(unsigned char key, int x, int y)
 {
-	cout << angle << endl;
 	switch (key) {
 	case 'w':
-		move_rotation = rotation;
-		if (phrase < 0.7)
+		if (speed < 1.5)	speed += 0.03;	// increasing speed till limit when moving forward, or decreasing speed when moving backwards
+		if(turning_angle == 0)	//when turning angle is 0
 		{
-			phrase = phrase + 0.05;
-		}			
-		if (angle == 0)	pos_x += phrase;
-		else
-		{
-			pos_x += sin(angle) * phrase;
-			pos_z += -cos(angle) * phrase;
+			rotation = 0;	//rover is not rotating
+			angular_speed = 0;	//and agular speed is none
 		}
 		break;
 	case 's':
-		move_rotation = rotation;
-		if (phrase < 0.7)
+		if (speed > -0.6)	speed -= 0.03;	//decreasing speed till limit when moveing forward, or increasing speed when moving backwards
+		if (turning_angle == 0)	//when turning angle is 0
 		{
-			phrase = phrase + 0.05;
-		}
-		if (angle == 0)	pos_x -= phrase;
-		else
-		{
-			pos_x -= sin(angle) * phrase;
-			pos_z -= -cos(angle) * phrase;
+			rotation = 0;	//rover is not rotating
+			angular_speed = 0;	//and agular speed is none
 		}
 		break;
 	case 'd':
-		if (angle < 4.76)
-		{
-			angle += 0.05;
-			rotation = (360 - 0) * (-angle + 1.6) / (4.8 + 1.6) + 0;
-		}
-		else if (angle > 4.76)
-		{
-			angle = -1.6;
-			rotation = (360 - 0) * (-angle + 1.6) / (4.8 + 1.6) + 0;
-		}
+			turning_angle += 8;	//increasing turning angle by 8 degrees
+			rotation = 0.8 / tan(turning_angle / (180 / GL_PI));	//calculating the rotation of rover
+			angular_speed = -speed / rotation;	//calculating the angular_speed
 		break;
 	case 'a':
-		if (angle > -1.56)
-		{
-			angle -= 0.05;
-			rotation = (360 - 0) * (-angle + 1.6) / (4.8 + 1.6) + 0;
-		}
-		else if (angle < -1.56)
-		{
-			angle = 4.8;
-			rotation = (360 - 0) * (-angle + 1.6) / (4.8 + 1.6) + 0;
-		}
+			turning_angle -= 8;	//decreasing turning angle by 8 degrees
+			rotation = 0.8 / tan(turning_angle / (180 / GL_PI));	//calculating the rotation of rover
+			angular_speed = -speed / rotation;	//calculating the angular_speed
 		break;
 	}
+}
+
+void timerCallback(int value)
+{
+	glutTimerFunc(100, timerCallback, 0);	//called every 100ms
+	speed = 0.95 * speed;	//decreasing the speed by 5%
+	diode_time += 1;	//iteration the diode glowing variable
+	if (diode_time > 14)	diode_time = 0;		//every 1500ms reseting it to 0
 }
 
 void renderScene(void) {
@@ -175,62 +171,46 @@ void renderScene(void) {
 	glColor3f(0, 0, 0);
 	cube.Draw();
 
+	//changing antennas' rotation variables
+	antenna_angle += 0.01;
+	antenna_rotation = 1 / tan(antenna_angle / (180 / GL_PI));
 
-	glPushMatrix();
+	glPushMatrix();	//stacinkg the object
 	glMatrixMode(GL_MODELVIEW);
-	glTranslatef(pos_x, 0.0, pos_z);
-	glRotatef(move_rotation, 0, 1, 0);
-	glTranslatef(0.0, 0.0, 0.0);
-	Lazik Marsjanski = Lazik();
-	glPopMatrix();
+
+	rover_angle += angular_speed;	//calculating the angle by angular speed
+	pos_x += cos(rover_angle) * speed;	//calculating the new X coordinate
+	pos_z += -sin(rover_angle) * speed;	//calculating the new Z coordinate
+	glTranslatef(pos_x, 0, pos_z);	//moving the rotation center to rover
+	glRotatef(rover_angle * (180/ GL_PI), 0, 1, 0);	//rotating the rover
+	glTranslatef(-pos_x, 0, -pos_z);	//moving it back
+	glTranslatef(pos_x, 0, pos_z);	//moving the rover
+	Lazik Marsjanski = Lazik();	//rendering the rover
+	//reseting the rotating variables, so rover moves only forward and backwards, when A and D are not clicked
+	turning_angle = 0;
+	rotation = 0;
+	angular_speed = 0;
 
 
+	glPushMatrix();	//stacinkg the object
+	glTranslatef(9.0, 0, -2.0);	//moving the rotation center to wheel
+	glRotatef(antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the antenne
+	glTranslatef(-9.0, 0, 2.0);	//moving it back
+	Marsjanski.antenna1();	//rendering the first antenne
+	glPopMatrix();	//unstacinkg the object
 
-	if (rotation == move_rotation)
-	{
-		glPushMatrix();
-		glTranslatef(pos_x, 0.0, pos_z);
-		glRotatef(move_rotation, 0, 1, 0);
-		glTranslatef(0.0, 0.0, 0.0);
-		Marsjanski.wheel1();
-		glPopMatrix();
+	glPushMatrix();	//stacinkg the object
+	glTranslatef(9.0, 0, 2.0);	//moving the rotation center to wheel
+	glRotatef(-antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the antenne
+	glTranslatef(-9.0, 0, -2.0);	//moving it back
+	Marsjanski.antenna2();	//rendering the second antenne
+	glPopMatrix();	//unstacinkg the object
 
+	if (diode_time == 0)	Marsjanski.diode(0.9);	//diode red glowing when the variable is equal 0
+	else	Marsjanski.diode(0.6);	//and showing it darker, if not
 
-		glPushMatrix();
-		glTranslatef(pos_x, 0.0, pos_z);
-		glRotatef(move_rotation, 0, 1, 0);
-		glTranslatef(0.0, 0.0, 0.0);
-		Marsjanski.wheel2();
-		glPopMatrix();
-	}
-	else
-	{
-		glPushMatrix();
-		glTranslatef(pos_x, 0.0, pos_z);
-		glRotatef(move_rotation, 0, 1, 0);
-		glTranslatef(0.0, 0.0, 0.0);
+	glPopMatrix();	//unstacinkg the object
 
-		glTranslatef(9.0, 0.0, 3.5);
-		glRotatef(rotation, 0, 1, 0);
-		glTranslatef(-9.0, 0.0, -3.5);
-		Marsjanski.wheel1();
-		glPopMatrix();
-
-		glPushMatrix();
-		glTranslatef(pos_x, 0.0, pos_z);
-		glRotatef(move_rotation, 0, 1, 0);
-		glTranslatef(0.0, 0.0, 0.0);
-
-		glTranslatef(9.0f, 0.0, -4.5f);
-		glRotatef(rotation, 0, 1, 0);
-		glTranslatef(-9.0f, 0.0, 4.5f);
-		Marsjanski.wheel2();
-		glPopMatrix();
-	}
-
-
-
-	//gluLookAt(x, y, z, x + lx, y + ly, z + lz, 0.0f, 1.0f, 0.0f);
 	glutSwapBuffers();
 }
 
@@ -249,8 +229,10 @@ int main(int argc, char** argv)
 	// here are the new entries
 	glutSpecialFunc(processSpecialKeys);
 	glutKeyboardFunc(processKeyboardKeys);
-	// OpenGL init
+	//OpenGL init
 	glEnable(GL_DEPTH_TEST);
+	//Glut timer
+	glutTimerFunc(100, timerCallback, 0);
 	// enter GLUT event processing cycle
 	glutMainLoop();
 	return 0;

@@ -16,9 +16,8 @@ Lazik::Lazik()
 
 	wheel(1.0f, 1.0f, 3.2f, 3.5f, 1.0f, 0.0, 0.0, 0.0, 5);
 	wheel(1.0f, 5.0f, 3.2f, 3.5f, 1.0f, 0.0, 0.0, 0.0, 5);
+	
 	axle(0.3f, 9.0f, 4.7f, -2.5f, -1.0f, 1.5f, 0.2, 0.2, 0.2, 20);
-
-
 	axle(0.3f, 1.0f, 4.7f, -2.5f, -1.0f, 1.5f, 0.2, 0.2, 0.2, 20);
 	axle(0.3f, 5.0f, 4.7f, -2.5f, -1.0f, 1.5f, 0.2, 0.2, 0.2, 20);
 
@@ -26,23 +25,21 @@ Lazik::Lazik()
 	wheel(1.0f, 1.0f, 3.2f, -4.5f, 1.0f, 0.0, 0.0, 0.0, 5);
 	wheel(1.0f, 5.0f, 3.2f, -4.5f, 1.0f, 0.0, 0.0, 0.0, 5);
 
-
-	cylinder(0.1f, 3.0f, 1.5f, 7.0f, 2.0f, 0.3, 0.3, 0.3, 20, 1);
-	cylinder(0.1f, 3.0f, 1.5f, 9.0f, 0.2f, 0.9, 0.0, 0.0, 20, 1);
-
-
-	cylinder(0.1f, 9.0f, -2.0f, 7.0f, 2.0f, 0.3, 0.3, 0.3, 20, 1);
-	cone(0.1f, 9.0f, -2.0f, 9.0f, 0.2f, 0.3, 0.3, 0.3, 20);
-	antenna(0.7f, -2.0f, 9.2f, 9.0f, 0.5f, 0.2, 0.2, 0.2, 20);
-
-	cylinder(0.1f, 9.0f, 2.5f, 7.0f, 2.0f, 0.3, 0.3, 0.3, 20, 1);
-	cone(0.1f, 9.0f, 2.5f, 9.0f, 0.2f, 0.3, 0.3, 0.3, 20);
-	antenna(0.7f, 2.5f, 9.2f, 9.0f, 0.5f, 0.2, 0.2, 0.2, 20);
-
-
+	//front wheels
+	wheel(1.0f, 9.0f, 3.2f, 3.5f, 1.0f, 0.0, 0.0, 0.0, 5);
+	wheel(1.0f, 9.0f, 3.2f, -4.5f, 1.0f, 0.0, 0.0, 0.0, 5);
+	
+	//camera
 	cylinder(0.1f, 9.0f, 0.0f, 7.0f, 0.5f, 0.3, 0.3, 0.3, 20, 1);
 	cuboid(8.5f, 7.5f, -0.25f, 1.5f, 0.5f, 0.5f, 0.5, 0.5, 0.5);
 	cylinder(0.1f, 0.0f, 7.75f, 10.0f, 0.2f, 0.1, 0.1, 0.1, 20, 2);
+
+	//antennas
+	cylinder(0.1f, 9.0f, -2.0f, 7.0f, 2.0f, 0.3, 0.3, 0.3, 20, 1);
+	cone(0.1f, 9.0f, -2.0f, 9.0f, 0.2f, 0.3, 0.3, 0.3, 20);
+
+	cylinder(0.1f, 9.0f, 2.0f, 7.0f, 2.0f, 0.3, 0.3, 0.3, 20, 1);
+	cone(0.1f, 9.0f, 2.0f, 9.0f, 0.2f, 0.3, 0.3, 0.3, 20);
 }
 
 
@@ -326,12 +323,18 @@ void Lazik::antenna(float R, float x, float y, float z, float height, float red,
 	glEnd();	//koniec sklejanego prymitywu - górnej podstawy
 }
 
-void Lazik::wheel1()
+void Lazik::antenna1()
 {
-	wheel(1.0f, 9.0f, 3.2f, 3.5f, 1.0f, 0.0, 0.0, 0.0, 5);
+	antenna(0.7f, -2.0f, 9.2f, 9.0f, 0.5f, 0.2, 0.2, 0.2, 20);
 }
 
-void Lazik::wheel2()
+void Lazik::antenna2()
 {
-	wheel(1.0f, 9.0f, 3.2f, -4.5f, 1.0f, 0.0, 0.0, 0.0, 5);
+	antenna(0.7f, 2.0f, 9.2f, 9.0f, 0.5f, 0.2, 0.2, 0.2, 20);
+}
+
+void Lazik::diode(float red)
+{
+	cylinder(0.1f, 3.0f, 1.5f, 7.0f, 2.0f, 0.3, 0.3, 0.3, 20, 1);
+	cylinder(0.1f, 3.0f, 1.5f, 9.0f, 0.2f, red, 0.0, 0.0, 20, 1);
 }
