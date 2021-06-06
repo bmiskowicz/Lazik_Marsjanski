@@ -51,6 +51,7 @@ float backWheels[] = { 1.0, 2.2, 0.0 };
 float frontWheels[] = { 9.0, 2.2, 0.0 };
 float frontRight[] = { 10.0, 5.0, 2.5 };
 float frontLeft[] = { 10.0, 5.0, -2.5 };
+float frontMiddle[] = { 10.0, 5.0, 0.0 };
 float backRight[] = { 0.0, 5.0, 2.5 };
 float backLeft[] = { 0.0, 5.0, -2.5 };
 
@@ -211,6 +212,7 @@ bool collisionDetection()
 	backWheels[0] += cos(rover_angle) * speed;
 	frontWheels[0] += cos(rover_angle) * speed;
 	frontRight[0] += cos(rover_angle) * speed;
+	frontMiddle[0] += cos(rover_angle) * speed;
 	frontLeft[0] += cos(rover_angle) * speed;
 	backRight[0] += cos(rover_angle) * speed;
 	backLeft[0] += cos(rover_angle) * speed;
@@ -219,18 +221,26 @@ bool collisionDetection()
 	backWheels[2] += -sin(rover_angle) * speed;
 	frontWheels[2] += -sin(rover_angle) * speed;
 	frontRight[2] += -sin(rover_angle) * speed;
+	frontMiddle[2] += -sin(rover_angle) * speed;
 	frontLeft[2] += -sin(rover_angle) * speed;
 	backRight[2] += -sin(rover_angle) * speed;
 	backLeft[2] += -sin(rover_angle) * speed;
 
 
-	if (coordinates.vertices[int(frontRight[0]) + 300][int(frontRight[2]) + 300] >= frontRight[1] - 0.8) return 0;
-	if (coordinates.vertices[int(frontLeft[0]) + 300][int(frontLeft[2]) + 300] >= frontLeft[1] - 0.8) return 0;
-	if (coordinates.vertices[int(frontWheels[0]) + 300][int(frontWheels[2]) + 300] >= frontWheels[1] + 1.5) return 0;
-	if (coordinates.vertices[int(backWheels[0]) + 300][int(backWheels[2]) + 300] >= backWheels[1] + 1.5) return 0;
+	if (coordinates.vertices[int(frontRight[0]) + 300][int(frontRight[2]) + 300] >= frontRight[1] - 1.2) return 0;
+	if (coordinates.vertices[int(frontMiddle[0]) + 300][int(frontMiddle[2]) + 300] >= frontMiddle[1] - 1.2)	return 0;
+	if (coordinates.vertices[int(frontLeft[0]) + 300][int(frontLeft[2]) + 300] >= frontLeft[1] - 1.2) return 0;
 	if (coordinates.vertices[int(backRight[0]) + 300][int(backRight[2]) + 300] >= backRight[1] - 0.8) return 0;
 	if (coordinates.vertices[int(backLeft[0]) + 300][int(backLeft[2]) + 300] >= backLeft[1] - 0.8) return 0;
 
+	if (coordinates.vertices[int(frontWheels[0]) + 300][int(frontWheels[2]) + 300] >= frontWheels[1] + 1.5)
+	{
+		return 0;
+	}
+	if (coordinates.vertices[int(backWheels[0]) + 300][int(backWheels[2]) + 300] >= backWheels[1] + 1.5)
+	{
+		return 0;
+	}
 
 	return 1;
 }
@@ -269,13 +279,19 @@ void renderScene(void) {
 	if (coordinates.vertices[int(frontWheels[0]) + 300][int(frontWheels[2]) + 300] < frontWheels[1] && coordinates.vertices[int(backWheels[0]) + 300][int(backWheels[2]) + 300] < backWheels[1])
 	{
 		frontWheels[1] -= 0.01;
+
+		//zrobiæ dekrementacje y pozosta³ych pkt
+
 		pos_y -= 0.01;
 	}
+
 
 	if (canMove == 1)	//if there's no collision detected
 	{
 		pos_x += cos(rover_angle) * speed;	//calculating the new X coordinate
 		pos_z += -sin(rover_angle) * speed;	//calculating the new Z coordinate
+
+		cout << rotationPointX[0] << " " << rotationPointX[2] << " " << pos_x << " " << pos_z << endl;
 
 		glPushMatrix();	//stacinkg the object
 		glMatrixMode(GL_MODELVIEW);
@@ -349,9 +365,8 @@ void renderScene(void) {
 
 		glPopMatrix();	//unstacinkg the object
 	}
-	canMove = 1;
 	
-	/*
+	
 	for (int i = 0; i <= 600; i++)
 	{
 		for (int j = 0; j <= 600; j++)
@@ -363,7 +378,7 @@ void renderScene(void) {
 		}
 		cout << endl;
 	}
-	*/
+	
 
 
 	glutSwapBuffers();
@@ -388,6 +403,15 @@ int main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST);
 	//Glut timer
 	glutTimerFunc(100, timerCallback, 0);
+	//correcting the collisions table, so objects also have collisions
+	for (int i = 69; i <= 71; i++)
+	{
+		for (int j = -10; j <= 10; j++)	coordinates.vertices[i + 300][j + 300] = 20;
+	}
+	for (int i = -10; i <= 10; i++)
+	{
+		for (int j = -60; j <= -40; j++)	coordinates.vertices[i + 300][j + 300] = 20;
+	}
 	// enter GLUT event processing cycle
 	glutMainLoop();
 	return 0;

@@ -94,6 +94,7 @@ void Interpreter::Draw()
 		glVertex3f(a.x, a.y, a.z);//Draw triangle
 		glVertex3f(b.x, b.y, b.z);
 		glVertex3f(c.x, c.y, c.z);
+
 	}
 	glEnd();
 }
