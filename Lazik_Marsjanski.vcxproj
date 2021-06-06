@@ -152,10 +152,12 @@
     <ClCompile Include="interpreter.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Lazik.cpp" />
+    <ClCompile Include="Vertices.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="interpreter.h" />
     <ClInclude Include="Lazik.h" />
+    <ClInclude Include="Vertices.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

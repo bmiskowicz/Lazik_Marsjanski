@@ -7,6 +7,7 @@
 #include "stb_image.h"
 #include "interpreter.h"
 #include "Lazik.h"
+#include "Vertices.h"
 
 #define GL_PI 3.14
 
@@ -22,6 +23,7 @@ int width, height, nrChannels;
 Interpreter textures = Interpreter("tekstury.obj");
 Interpreter cube = Interpreter("cube.obj");
 Interpreter icosphere = Interpreter("Icosphere.obj");
+Vertices coordinates = Vertices("tekstury.obj");
 
 //rover's x and y coordinates
 float pos_x = 0;
@@ -159,10 +161,7 @@ void renderScene(void) {
 	// Set the camera
 	gluLookAt(x, y, z, x + lx, y + ly, z + lz, 0.0f, 1.0f, 0.0f);
 
-	glColor3f(1.0, 1.0, 1.0);
-	init(stbi_load("textures.jpg", &width, &height, &nrChannels, 0));
-	textures.DrawT();
-	glDeleteTextures(1, &textureName);
+
 
 	init(stbi_load("stone.jpg", &width, &height, &nrChannels, 0));
 	icosphere.DrawT();
@@ -171,45 +170,21 @@ void renderScene(void) {
 	glColor3f(0, 0, 0);
 	cube.Draw();
 
-	//changing antennas' rotation variables
-	antenna_angle += 0.01;
-	antenna_rotation = 1 / tan(antenna_angle / (180 / GL_PI));
-
-	glPushMatrix();	//stacinkg the object
-	glMatrixMode(GL_MODELVIEW);
-
-	rover_angle += angular_speed;	//calculating the angle by angular speed
-	pos_x += cos(rover_angle) * speed;	//calculating the new X coordinate
-	pos_z += -sin(rover_angle) * speed;	//calculating the new Z coordinate
-	glTranslatef(pos_x, 0, pos_z);	//moving the rotation center to rover
-	glRotatef(rover_angle * (180/ GL_PI), 0, 1, 0);	//rotating the rover
-	glTranslatef(-pos_x, 0, -pos_z);	//moving it back
-	glTranslatef(pos_x, 0, pos_z);	//moving the rover
-	Lazik Marsjanski = Lazik();	//rendering the rover
-	//reseting the rotating variables, so rover moves only forward and backwards, when A and D are not clicked
-	turning_angle = 0;
-	rotation = 0;
-	angular_speed = 0;
 
 
-	glPushMatrix();	//stacinkg the object
-	glTranslatef(9.0, 0, -2.0);	//moving the rotation center to wheel
-	glRotatef(antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the antenne
-	glTranslatef(-9.0, 0, 2.0);	//moving it back
-	Marsjanski.antenna1();	//rendering the first antenne
-	glPopMatrix();	//unstacinkg the object
+	for (int i = 0; i <= 600; i++)
+	{
+		for (int j = 0; j <= 600; j++)
+		{
+			glColor3f(0.0, 1.0, 0.0);
+			glBegin(GL_POINTS);
+			glVertex3f(i - 300, coordinates.vertices[i][j], j - 300);
+			glEnd();
+		}
+		cout << endl;
+	}
 
-	glPushMatrix();	//stacinkg the object
-	glTranslatef(9.0, 0, 2.0);	//moving the rotation center to wheel
-	glRotatef(-antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the antenne
-	glTranslatef(-9.0, 0, -2.0);	//moving it back
-	Marsjanski.antenna2();	//rendering the second antenne
-	glPopMatrix();	//unstacinkg the object
 
-	if (diode_time == 0)	Marsjanski.diode(0.9);	//diode red glowing when the variable is equal 0
-	else	Marsjanski.diode(0.6);	//and showing it darker, if not
-
-	glPopMatrix();	//unstacinkg the object
 
 	glutSwapBuffers();
 }
