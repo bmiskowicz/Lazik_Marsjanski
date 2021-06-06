@@ -142,7 +142,6 @@ void Vertices::min(float x1, float x2, float x3, float z1, float z2, float z3)
 		minmax[0][0] = x3;
 		minmax[0][1] = z3;
 	}
-	return;
 }
 
 void Vertices::max(float x1, float x2, float x3, float z1, float z2, float z3)
@@ -162,7 +161,6 @@ void Vertices::max(float x1, float x2, float x3, float z1, float z2, float z3)
 		minmax[2][0] = x3;
 		minmax[2][1] = z3;
 	}
-	return;
 }
 
 void Vertices::middle(float x1, float x2, float x3, float z1, float z2, float z3)
@@ -192,5 +190,72 @@ void Vertices::middle(float x1, float x2, float x3, float z1, float z2, float z3
 		minmax[1][0] = x3;
 		minmax[1][1] = z3;
 	}
-	return;
+}
+
+
+void Vertices::rotationPoint()
+{
+	glColor3f(1.0, 0.0, 0.0);
+	glBegin(GL_POINTS);
+	glVertex3f(0.0, 5.0, 0.0);
+	glEnd();
+}
+
+void Vertices::backWheels()
+{
+	glColor3f(1.0, 0.0, 0.0);
+	glBegin(GL_POINTS);
+	glVertex3f(1.0, 2.2, 0.0);
+	glEnd();
+}
+
+void Vertices::frontWheels()
+{
+	glColor3f(1.0, 0.0, 0.0);
+	glBegin(GL_POINTS);
+	glVertex3f(9.0, 2.2, 0.0);
+	glEnd();
+}
+
+void Vertices::frontRight()
+{
+	glColor3f(1.0, 0.0, 0.0);
+	glBegin(GL_POINTS);
+	glVertex3f(10.0, 5.0, 2.5);
+	glEnd();
+}
+
+void Vertices::frontLeft()
+{
+	glColor3f(1.0, 0.0, 0.0);
+	glBegin(GL_POINTS);
+	glVertex3f(10.0, 5.0, -2.5);
+	glEnd();
+}
+
+void Vertices::backRight()
+{
+	glColor3f(1.0, 0.0, 0.0);
+	glBegin(GL_POINTS);
+	glVertex3f(0.0, 5.0, 2.5);
+	glEnd();
+}
+
+void Vertices::backLeft()
+{
+	glColor3f(1.0, 0.0, 0.0);
+	glBegin(GL_POINTS);
+	glVertex3f(0.0, 5.0, -2.5);
+	glEnd();
+}
+
+void Vertices::drawPoints()
+{
+	rotationPoint();
+	backWheels();
+	frontWheels();
+	frontRight();
+	frontLeft();
+	backRight();
+	backLeft();
 }

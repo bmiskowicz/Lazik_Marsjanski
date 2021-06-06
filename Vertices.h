@@ -28,6 +28,15 @@ public:
 	void min(float x1, float x2, float x3, float z1, float z2, float z3);
 	void max(float x1, float x2, float x3, float z1, float z2, float z3);
 	void middle(float x1, float x2, float x3, float z1, float z2, float z3);
+
+	void rotationPoint();
+	void backWheels();
+	void frontWheels();
+	void frontRight();
+	void frontLeft();
+	void backRight();
+	void backLeft();
+	void drawPoints();
 private:
 	vector<vector<GLfloat>> v;//Store vertex (x,y,z) coordinates
 	vector<vector<GLint>> f;//Store the three vertex indexes of the face
