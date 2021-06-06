@@ -13,6 +13,10 @@ class Vertices
 {
 public:
 	float vertices[600][600];
+	float minmax[3][2];
+	float middleZ;
+	float Zmin;
+	float Zmax;
 	struct vertex
 	{
 		float x;
@@ -20,10 +24,10 @@ public:
 		float z;
 	};
 	Vertices(string filename);//Read function
-	void IsInside(int x1, int x2, int x3, int z1, int z2, int z3, int y1, int y2, int y3);
-	bool Obszar(int x1, int z1, int x2, int z2, int x3, int z3);
-	float min(float v1, float v2, float v3);
-	float max(float v1, float v2, float v3);
+	void IsInside(float x1, float x2, float x3, float z1, float z2, float z3, float y1, float y2, float y3);
+	void min(float x1, float x2, float x3, float z1, float z2, float z3);
+	void max(float x1, float x2, float x3, float z1, float z2, float z3);
+	void middle(float x1, float x2, float x3, float z1, float z2, float z3);
 private:
 	vector<vector<GLfloat>> v;//Store vertex (x,y,z) coordinates
 	vector<vector<GLint>> f;//Store the three vertex indexes of the face

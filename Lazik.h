@@ -21,4 +21,5 @@ public:
 	void antenna1();
 	void antenna2();
 	void diode(float red);
+	void points();
 };

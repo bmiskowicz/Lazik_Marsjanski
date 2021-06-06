@@ -40,6 +40,8 @@ Lazik::Lazik()
 
 	cylinder(0.1f, 9.0f, 2.0f, 7.0f, 2.0f, 0.3, 0.3, 0.3, 20, 1);
 	cone(0.1f, 9.0f, 2.0f, 9.0f, 0.2f, 0.3, 0.3, 0.3, 20);
+
+	points();
 }
 
 
@@ -337,4 +339,8 @@ void Lazik::diode(float red)
 {
 	cylinder(0.1f, 3.0f, 1.5f, 7.0f, 2.0f, 0.3, 0.3, 0.3, 20, 1);
 	cylinder(0.1f, 3.0f, 1.5f, 9.0f, 0.2f, red, 0.0, 0.0, 20, 1);
+}
+
+void Lazik::points()
+{
 }

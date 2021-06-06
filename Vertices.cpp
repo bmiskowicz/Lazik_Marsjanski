@@ -55,21 +55,34 @@ Vertices::Vertices(string filename)
 
 }
 
-void Vertices::IsInside(int x1, int x2, int x3, int z1, int z2, int z3, int y1, int y2, int y3)
-{
-	float minZ = min(z1, z2, z3);
-	float maxZ = max(z1, z2, z3);
-	float minX = min(x1, x2, x3);
-	float maxX = max(x1, x2, x3);
 
-	for (int i = minX; i <= maxX; i++)
+void Vertices::IsInside(float x1, float x2, float x3, float z1, float z2, float z3, float y1, float y2, float y3)
+{
+	min(x1, x2, x3, z1, z2, z3);
+	max(x1, x2, x3, z1, z2, z3);
+	middle(x1, x2, x3, z1, z2, z3);
+	middleZ = ((minmax[0][1] - minmax[2][1]) / (minmax[0][0] - minmax[2][0])) * minmax[1][0] + minmax[0][1] - ((minmax[0][1] - minmax[2][1]) / (minmax[0][0] - minmax[2][0])) * minmax[0][0];
+
+	if (middleZ < minmax[1][1])
 	{
-		for (int j = minZ; j <= maxZ; j++)
+		for (int i = minmax[0][0]; i <= minmax[1][0]; i++)
 		{
-			double T = Obszar(x1, z1, x2, z2, x3, z3);
-			double T1 = Obszar(i, j, x2, z2, x3, z3);
-			double T2 = Obszar(x1, z1, i, j, x3, z3);
-			double T3 = Obszar(x1, z1, x2, z2, i, j);
+			Zmin = ((minmax[0][1] - minmax[2][1]) / (minmax[0][0] - minmax[2][0])) * i + minmax[0][1] - ((minmax[0][1] - minmax[2][1]) / (minmax[0][0] - minmax[2][0])) * minmax[0][0];
+			Zmax = ((minmax[0][1] - minmax[1][1]) / (minmax[0][0] - minmax[1][0])) * i + minmax[0][1] - ((minmax[0][1] - minmax[1][1]) / (minmax[0][0] - minmax[1][0])) * minmax[0][0];
+			for (int j = Zmin; j <= Zmax; j++)
+			{
+				float det = (z2 - z3) * (x1 - x3) + (x3 - x2) * (z1 - z3);
+				float l1 = ((z2 - z3) * (i - x3) + (x3 - x2) * (j - z3)) / det;
+				float l2 = ((z3 - z1) * (i - x3) + (x1 - x3) * (j - z3)) / det;
+				float l3 = 1.0f - l1 - l2;
+				vertices[i + 300][j + 300] = l1 * y1 + l2 * y2 + l3 * y3;
+			}
+		}
+		for (int i = minmax[1][0] + 1; i <= minmax[2][0]; i++)
+		{
+			Zmin = ((minmax[0][1] - minmax[2][1]) / (minmax[0][0] - minmax[2][0])) * i + minmax[0][1] - ((minmax[0][1] - minmax[2][1]) / (minmax[0][0] - minmax[2][0])) * minmax[0][0];
+			Zmax = ((minmax[1][1] - minmax[2][1]) / (minmax[1][0] - minmax[2][0])) * i + minmax[1][1] - ((minmax[1][1] - minmax[2][1]) / (minmax[1][0] - minmax[2][0])) * minmax[1][0];
+			for (int j = Zmin; j <= Zmax; j++)
 			{
 				float det = (z2 - z3) * (x1 - x3) + (x3 - x2) * (z1 - z3);
 				float l1 = ((z2 - z3) * (i - x3) + (x3 - x2) * (j - z3)) / det;
@@ -79,23 +92,105 @@ void Vertices::IsInside(int x1, int x2, int x3, int z1, int z2, int z3, int y1, 
 			}
 		}
 	}
+	else
+	{
+		for (int i = minmax[0][0]; i <= minmax[1][0]; i++)
+		{
+			Zmax = ((minmax[0][1] - minmax[2][1]) / (minmax[0][0] - minmax[2][0])) * i + minmax[0][1] - ((minmax[0][1] - minmax[2][1]) / (minmax[0][0] - minmax[2][0])) * minmax[0][0];
+			Zmin = ((minmax[0][1] - minmax[1][1]) / (minmax[0][0] - minmax[1][0])) * i + minmax[0][1] - ((minmax[0][1] - minmax[1][1]) / (minmax[0][0] - minmax[1][0])) * minmax[0][0];
+			for (int j = Zmin; j <= Zmax; j++)
+			{
+				float det = (z2 - z3) * (x1 - x3) + (x3 - x2) * (z1 - z3);
+				float l1 = ((z2 - z3) * (i - x3) + (x3 - x2) * (j - z3)) / det;
+				float l2 = ((z3 - z1) * (i - x3) + (x1 - x3) * (j - z3)) / det;
+				float l3 = 1.0f - l1 - l2;
+				vertices[i + 300][j + 300] = l1 * y1 + l2 * y2 + l3 * y3;
+			}
+		}
+		for (int i = minmax[1][0] + 1; i <= minmax[2][0]; i++)
+		{
+			Zmax = ((minmax[0][1] - minmax[2][1]) / (minmax[0][0] - minmax[2][0])) * i + minmax[0][1] - ((minmax[0][1] - minmax[2][1]) / (minmax[0][0] - minmax[2][0])) * minmax[0][0];
+			Zmin = ((minmax[1][1] - minmax[2][1]) / (minmax[1][0] - minmax[2][0])) * i + minmax[1][1] - ((minmax[1][1] - minmax[2][1]) / (minmax[1][0] - minmax[2][0])) * minmax[1][0];
+			for (int j = Zmin; j <= Zmax; j++)
+			{
+				float det = (z2 - z3) * (x1 - x3) + (x3 - x2) * (z1 - z3);
+				float l1 = ((z2 - z3) * (i - x3) + (x3 - x2) * (j - z3)) / det;
+				float l2 = ((z3 - z1) * (i - x3) + (x1 - x3) * (j - z3)) / det;
+				float l3 = 1.0f - l1 - l2;
+				vertices[i + 300][j + 300] = l1 * y1 + l2 * y2 + l3 * y3;
+			}
+		}
+	}
+
 }
 
-bool Vertices::Obszar(int x1, int z1, int x2, int z2, int x3, int z3)
+
+void Vertices::min(float x1, float x2, float x3, float z1, float z2, float z3)
 {
-	return 0.5 * abs((x1 * (z2 - z3) + x2 * (z3 - z1) + x3 * (z1 - z2)));
+	if (x1 <= x2 && x1 <= x3)
+	{
+		minmax[0][0] = x1;
+		minmax[0][1] = z1;
+	}
+	else if (x2 <= x1 && x2 <= x3)
+	{
+		minmax[0][0] = x2;
+		minmax[0][1] = z2;
+	}
+	else
+	{
+		minmax[0][0] = x3;
+		minmax[0][1] = z3;
+	}
+	return;
 }
 
-float Vertices::min(float v1, float v2, float v3)
+void Vertices::max(float x1, float x2, float x3, float z1, float z2, float z3)
 {
-	if (v1 <= v2 && v1 <= v3)	return v1;
-	else if (v2 <= v1 && v2 <= v3)	return v2;
-	else	return v3;
+	if (x1 >= x2 && x1 >= x3)
+	{
+		minmax[2][0] = x1;
+		minmax[2][1] = z1;
+	}
+	else if (x2 >= x1 && x2 >= x3)
+	{
+		minmax[2][0] = x2;
+		minmax[2][1] = z2;
+	}
+	else
+	{
+		minmax[2][0] = x3;
+		minmax[2][1] = z3;
+	}
+	return;
 }
 
-float Vertices::max(float v1, float v2, float v3)
+void Vertices::middle(float x1, float x2, float x3, float z1, float z2, float z3)
 {
-	if (v1 >= v2 && v1 >= v2)	return v1;
-	else if (v2 >= v1 && v2 >= v3)	return v2;
-	else	return v3;
+	if (x1 >= x2 && x1 <= x3)
+	{
+		minmax[1][0] = x1;
+		minmax[1][1] = z1;
+	}
+	else if (x1 <= x2 && x1 >= x3)
+	{
+		minmax[1][0] = x1;
+		minmax[1][1] = z1;
+	}
+	else if (x2 >= x1 && x2 <= x3)
+	{
+		minmax[1][0] = x2;
+		minmax[1][1] = z2;
+	}
+	else if (x2 <= x1 && x2 >= x3)
+	{
+		minmax[1][0] = x2;
+		minmax[1][1] = z2;
+	}
+	else
+	{
+		minmax[1][0] = x3;
+		minmax[1][1] = z3;
+	}
+	return;
 }
