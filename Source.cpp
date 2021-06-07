@@ -23,6 +23,11 @@ int width, height, nrChannels;
 Interpreter textures = Interpreter("tekstury.obj");
 Interpreter cube = Interpreter("cube.obj");
 Interpreter icosphere = Interpreter("Icosphere.obj");
+
+//objects for collecting points
+Interpreter star = Interpreter("gwiazda.obj");
+
+//collisions map
 Vertices coordinates = Vertices("tekstury.obj");
 
 //rover's x and y coordinates
@@ -211,6 +216,19 @@ bool collisionDetection()
 	return 1;
 }
 
+void StarDrawing(float starX, float starY, float starZ)
+{
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();	//stacking the object
+	glColor3f(1.0, 0.827, 0);	//yellow colour
+
+	glTranslatef(starX, 0, starZ);	//moving the rotation center to star
+	glRotatef(-antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the star
+	glTranslatef(-starX, 0, -starZ);	//moving it back
+	star.DrawStar(starX, starY, starZ);	//rendering the star
+	glPopMatrix();	//unstacinkg the object
+}
+
 void renderScene(void) {
 	// Clear Color and Depth Buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -236,6 +254,10 @@ void renderScene(void) {
 	antenna_angle += 0.01;
 	antenna_rotation = 1 / tan(antenna_angle / (180 / GL_PI));
 
+	StarDrawing(0.0, 12.0, 0.0);
+	StarDrawing(0.0, 12.0, 12.0);
+	StarDrawing(12.0, 12.0, 0.0);
+
 	rover_angle += angular_speed;	//calculating the angle by angular speed
 
 	canMove = collisionDetection();	//detecting possible collisions
@@ -260,7 +282,6 @@ void renderScene(void) {
 		cout << frontWheels[0] << " " << frontWheels[2] << " " << pos_x << " " << pos_z << endl;
 
 		glPushMatrix();	//stacinkg the object
-		glMatrixMode(GL_MODELVIEW);
 		glTranslatef(pos_x, 0, pos_z);	//moving the rotation center to rover
 		glRotatef(rover_angle * (180 / GL_PI), 0, 1, 0);	//rotating the rover
 		glTranslatef(-pos_x, 0, -pos_z);	//moving it back
@@ -299,7 +320,6 @@ void renderScene(void) {
 		speed = 0;
 
 		glPushMatrix();	//stacinkg the object
-		glMatrixMode(GL_MODELVIEW);
 		glTranslatef(pos_x, 0, pos_z);	//moving the rotation center to rover
 		glRotatef(rover_angle * (180 / GL_PI), 0, 1, 0);	//rotating the rover
 		glTranslatef(-pos_x, 0, -pos_z);	//moving it back
