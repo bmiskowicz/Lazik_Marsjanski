@@ -43,7 +43,7 @@ float antenna_rotation = 0.0;
 float antenna_angle = 0.0;
 
 //variable for diode
-float diode_time = 0;;
+float diode_time = 0;
 
 //collision points
 float backMiddle[] = {0.0, 5.0, 0.0 };
@@ -53,14 +53,6 @@ float frontMiddle[] = { 10.0, 5.0, 0.0 };
 
 //collision checking variable
 bool canMove = 1;
-
-//variables for calculating Y pos
-float det;
-float l1;
-float l2;
-float l3;
-float pointY;
-
 
 void init(unsigned char* data)
 {
@@ -158,6 +150,7 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		angular_speed = -speed / rotation;	//calculating the angular_speed
 		break;
 	case 't':
+		//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA DAÆ TO DO SPRAWKA Z FABU£¥ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 		//reseting the variables, so rover goes to it's start position
 		turning_angle = 0.0;
 		rover_angle = 0.0;
@@ -177,6 +170,9 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		frontWheels[0] = 9.0;
 		frontWheels[1] = 2.2;
 		frontWheels[2] = 0.0;
+		frontMiddle[0] = 0.0;
+		frontMiddle[1] = 5.0;
+		frontMiddle[2] = 10.0;
 		canMove = 1;
 
 		break;
@@ -196,14 +192,14 @@ bool collisionDetection()
 	//calculating the X position of rover
 	backMiddle[0] += cos(rover_angle) * speed;
 	backWheels[0] += cos(rover_angle) * speed;
-	frontWheels[0] += cos(rover_angle) * speed;
-	frontMiddle[0] += cos(rover_angle) * speed;
+	frontWheels[0] = pos_x  + cos(rover_angle) * 10;
+	frontMiddle[0] = pos_x + cos(rover_angle) * 10;
 
 	//calculating the Z position of rover
 	backMiddle[2] += -sin(rover_angle) * speed;
 	backWheels[2] += -sin(rover_angle) * speed;
-	frontWheels[2] += -sin(rover_angle) * speed;
-	frontMiddle[2] += -sin(rover_angle) * speed;
+	frontWheels[2] = pos_z  - sin(rover_angle) * 10;
+	frontMiddle[2] = pos_z - sin(rover_angle) * 10;
 
 	//checking if there is collision, and if is return 1
 	if (coordinates.vertices[int(frontMiddle[0]) + 300][int(frontMiddle[2]) + 300] >= frontMiddle[1] - 1.2)	return 0;
@@ -236,8 +232,6 @@ void renderScene(void) {
 	glColor3f(0, 0, 0);
 	cube.Draw();
 
-
-
 	//changing antennas' rotation variables
 	antenna_angle += 0.01;
 	antenna_rotation = 1 / tan(antenna_angle / (180 / GL_PI));
@@ -246,6 +240,7 @@ void renderScene(void) {
 
 	canMove = collisionDetection();	//detecting possible collisions
 
+	//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA DAÆ TO DO SPRAWKA Z FABU£¥ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 	if (coordinates.vertices[int(frontWheels[0]) + 300][int(frontWheels[2]) + 300] < frontWheels[1] && coordinates.vertices[int(backWheels[0]) + 300][int(backWheels[2]) + 300] < backWheels[1])
 	{
 		//falling down if there is nothing below
@@ -262,7 +257,7 @@ void renderScene(void) {
 		pos_x += cos(rover_angle) * speed;	//calculating the new X coordinate
 		pos_z += -sin(rover_angle) * speed;	//calculating the new Z coordinate
 
-		cout << speed << endl;
+		cout << frontWheels[0] << " " << frontWheels[2] << " " << pos_x << " " << pos_z << endl;
 
 		glPushMatrix();	//stacinkg the object
 		glMatrixMode(GL_MODELVIEW);
@@ -275,7 +270,6 @@ void renderScene(void) {
 		turning_angle = 0;
 		rotation = 0;
 		angular_speed = 0;
-
 
 		glPushMatrix();	//stacinkg the object
 		glTranslatef(9.0, 0, -2.0);	//moving the rotation center to wheel
@@ -298,9 +292,11 @@ void renderScene(void) {
 	}
 	else	//if there is collision
 	{
-		speed = 0;	//stop the rover
-		pos_x += cos(rover_angle) * speed;	//calculating the new X coordinate
-		pos_z += -sin(rover_angle) * speed;	//calculating the new Z coordinate
+		
+		pos_x -=  2 * cos(rover_angle) * speed;	//calculating the new X coordinate
+		pos_z -=  2 * -sin(rover_angle) * speed;	//calculating the new Z coordinate
+
+		speed = 0;
 
 		glPushMatrix();	//stacinkg the object
 		glMatrixMode(GL_MODELVIEW);
@@ -313,7 +309,6 @@ void renderScene(void) {
 		turning_angle = 0;
 		rotation = 0;
 		angular_speed = 0;
-
 
 		glPushMatrix();	//stacinkg the object
 		glTranslatef(9.0, 0, -2.0);	//moving the rotation center to wheel
@@ -347,7 +342,7 @@ void renderScene(void) {
 		}
 		cout << endl;
 	}
-	*/	
+	*/
 
 
 	glutSwapBuffers();
