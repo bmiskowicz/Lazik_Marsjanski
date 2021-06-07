@@ -46,14 +46,10 @@ float antenna_angle = 0.0;
 float diode_time = 0;;
 
 //collision points
-float rotationPointX[] = {0.0, 5.0, 0.0 };
+float backMiddle[] = {0.0, 5.0, 0.0 };
 float backWheels[] = { 1.0, 2.2, 0.0 };
 float frontWheels[] = { 9.0, 2.2, 0.0 };
-float frontRight[] = { 10.0, 5.0, 2.5 };
-float frontLeft[] = { 10.0, 5.0, -2.5 };
 float frontMiddle[] = { 10.0, 5.0, 0.0 };
-float backRight[] = { 0.0, 5.0, 2.5 };
-float backLeft[] = { 0.0, 5.0, -2.5 };
 
 //collision checking variable
 bool canMove = 1;
@@ -162,6 +158,7 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		angular_speed = -speed / rotation;	//calculating the angular_speed
 		break;
 	case 't':
+		//reseting the variables, so rover goes to it's start position
 		turning_angle = 0.0;
 		rover_angle = 0.0;
 		rotation = 0.0;
@@ -171,27 +168,15 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		pos_z = 0;
 		pos_y = 2.2;
 
-		rotationPointX[0] = 0.0;
-		rotationPointX[1] = 5.0;
-		rotationPointX[2] = 0.0;
+		backMiddle[0] = 0.0;
+		backMiddle[1] = 5.0;
+		backMiddle[2] = 0.0;
 		backWheels[0] = 1.0;
 		backWheels[1] = 2.2;
 		backWheels[2] = 0.0;
 		frontWheels[0] = 9.0;
 		frontWheels[1] = 2.2;
 		frontWheels[2] = 0.0;
-		frontRight[0] = 10.0;
-		frontRight[1] = 5.0;
-		frontRight[2] = 2.5;
-		frontLeft[0] = 10.0;
-		frontLeft[1] = 5.0;
-		frontLeft[2] = -2.5;
-		backRight[0] = 0.0;
-		backRight[1] = 5.0;
-		backRight[2] = 2.5;
-		backLeft[0] = 0.0;
-		backLeft[1] = 5.0;
-		backLeft[2] = -2.5;
 		canMove = 1;
 
 		break;
@@ -208,40 +193,25 @@ void timerCallback(int value)
 
 bool collisionDetection()
 {
-	rotationPointX[0] += cos(rover_angle) * speed;
+	//calculating the X position of rover
+	backMiddle[0] += cos(rover_angle) * speed;
 	backWheels[0] += cos(rover_angle) * speed;
 	frontWheels[0] += cos(rover_angle) * speed;
-	frontRight[0] += cos(rover_angle) * speed;
 	frontMiddle[0] += cos(rover_angle) * speed;
-	frontLeft[0] += cos(rover_angle) * speed;
-	backRight[0] += cos(rover_angle) * speed;
-	backLeft[0] += cos(rover_angle) * speed;
 
-	rotationPointX[2] += -sin(rover_angle) * speed;
+	//calculating the Z position of rover
+	backMiddle[2] += -sin(rover_angle) * speed;
 	backWheels[2] += -sin(rover_angle) * speed;
 	frontWheels[2] += -sin(rover_angle) * speed;
-	frontRight[2] += -sin(rover_angle) * speed;
 	frontMiddle[2] += -sin(rover_angle) * speed;
-	frontLeft[2] += -sin(rover_angle) * speed;
-	backRight[2] += -sin(rover_angle) * speed;
-	backLeft[2] += -sin(rover_angle) * speed;
 
-
-	if (coordinates.vertices[int(frontRight[0]) + 300][int(frontRight[2]) + 300] >= frontRight[1] - 1.2) return 0;
+	//checking if there is collision, and if is return 1
 	if (coordinates.vertices[int(frontMiddle[0]) + 300][int(frontMiddle[2]) + 300] >= frontMiddle[1] - 1.2)	return 0;
-	if (coordinates.vertices[int(frontLeft[0]) + 300][int(frontLeft[2]) + 300] >= frontLeft[1] - 1.2) return 0;
-	if (coordinates.vertices[int(backRight[0]) + 300][int(backRight[2]) + 300] >= backRight[1] - 0.8) return 0;
-	if (coordinates.vertices[int(backLeft[0]) + 300][int(backLeft[2]) + 300] >= backLeft[1] - 0.8) return 0;
+	if (coordinates.vertices[int(backMiddle[0]) + 300][int(backMiddle[2]) + 300] >= backMiddle[1] - 1.2)	return 0;
+	if (coordinates.vertices[int(frontWheels[0]) + 300][int(frontWheels[2]) + 300] >= frontWheels[1] + 1.5)	return 0;
+	if (coordinates.vertices[int(backWheels[0]) + 300][int(backWheels[2]) + 300] >= backWheels[1] + 1.5)	return 0;
 
-	if (coordinates.vertices[int(frontWheels[0]) + 300][int(frontWheels[2]) + 300] >= frontWheels[1] + 1.5)
-	{
-		return 0;
-	}
-	if (coordinates.vertices[int(backWheels[0]) + 300][int(backWheels[2]) + 300] >= backWheels[1] + 1.5)
-	{
-		return 0;
-	}
-
+	//if there's no collision return 1
 	return 1;
 }
 
@@ -278,10 +248,11 @@ void renderScene(void) {
 
 	if (coordinates.vertices[int(frontWheels[0]) + 300][int(frontWheels[2]) + 300] < frontWheels[1] && coordinates.vertices[int(backWheels[0]) + 300][int(backWheels[2]) + 300] < backWheels[1])
 	{
+		//falling down if there is nothing below
+		backMiddle[1] -= 0.01;
+		backWheels[1] -= 0.01;
 		frontWheels[1] -= 0.01;
-
-		//zrobiæ dekrementacje y pozosta³ych pkt
-
+		frontMiddle[1] -= 0.01;
 		pos_y -= 0.01;
 	}
 
@@ -291,7 +262,7 @@ void renderScene(void) {
 		pos_x += cos(rover_angle) * speed;	//calculating the new X coordinate
 		pos_z += -sin(rover_angle) * speed;	//calculating the new Z coordinate
 
-		cout << rotationPointX[0] << " " << rotationPointX[2] << " " << pos_x << " " << pos_z << endl;
+		cout << speed << endl;
 
 		glPushMatrix();	//stacinkg the object
 		glMatrixMode(GL_MODELVIEW);
@@ -300,7 +271,6 @@ void renderScene(void) {
 		glTranslatef(-pos_x, 0, -pos_z);	//moving it back
 		glTranslatef(pos_x, pos_y, pos_z);	//moving the rover
 		Lazik Marsjanski = Lazik();	//rendering the rover
-		coordinates.drawPoints();
 		//reseting the rotating variables, so rover moves only forward and backwards, when A and D are not clicked
 		turning_angle = 0;
 		rotation = 0;
@@ -326,9 +296,9 @@ void renderScene(void) {
 
 		glPopMatrix();	//unstacinkg the object
 	}
-	else
+	else	//if there is collision
 	{
-		speed = 0;
+		speed = 0;	//stop the rover
 		pos_x += cos(rover_angle) * speed;	//calculating the new X coordinate
 		pos_z += -sin(rover_angle) * speed;	//calculating the new Z coordinate
 
@@ -339,7 +309,6 @@ void renderScene(void) {
 		glTranslatef(-pos_x, 0, -pos_z);	//moving it back
 		glTranslatef(pos_x, 0, pos_z);	//moving the rover
 		Lazik Marsjanski = Lazik();	//rendering the rover
-		coordinates.drawPoints();
 		//reseting the rotating variables, so rover moves only forward and backwards, when A and D are not clicked
 		turning_angle = 0;
 		rotation = 0;
@@ -366,7 +335,7 @@ void renderScene(void) {
 		glPopMatrix();	//unstacinkg the object
 	}
 	
-	
+	/*
 	for (int i = 0; i <= 600; i++)
 	{
 		for (int j = 0; j <= 600; j++)
@@ -378,7 +347,7 @@ void renderScene(void) {
 		}
 		cout << endl;
 	}
-	
+	*/	
 
 
 	glutSwapBuffers();

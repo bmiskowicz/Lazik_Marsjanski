@@ -1,2 +1,5 @@
 ﻿  Source.cpp
+  Vertices.cpp
+D:\Projekty\Lazik_Marsjanski\Vertices.cpp(33,20): warning C4018: '<': signed/unsigned mismatch
+  Generating Code...
   Lazik_Marsjanski.vcxproj -> D:\Projekty\Lazik_Marsjanski\Debug\Lazik_Marsjanski.exe
