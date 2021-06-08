@@ -11,6 +11,23 @@
 #define GL_PI 3.14
 
 
+// Constant definitions for Menus
+#define EASY 1
+#define HARD 2
+#define RESTARTMENU 1
+
+// Pop up menu identifiers
+int modeMenu, mainMenu;
+
+// menu status
+int menuFlag = 0;
+
+// color for the nose
+float red = 1.0f, blue = 0.5f, green = 0.5f;
+
+// scale of snowman
+float scale = 1.0f;
+
 // XZ position of the camera
 float x = 0.0f, z = 0.0f, y = 15.0f;
 static GLuint textureName;
@@ -24,6 +41,7 @@ Interpreter icosphere = Interpreter("Icosphere.obj");
 Interpreter star = Interpreter("gwiazda.obj");
 float stars[600][600];	//stars collecting table
 
+//variables for stars collecting
 const int numberOfStars = 3;
 float starsPos[numberOfStars][3] = {{13.0, 0.0, 0.0},
 						{0.0, 0.0, 22.0},
@@ -66,6 +84,83 @@ float cameraPos[] = { -15.0, 25.0, 0.0 };
 
 //collision checking variable
 bool canMove = 1;
+
+
+void processMenuStatus(int status, int x, int y)
+{
+	if (status == GLUT_MENU_IN_USE)
+		menuFlag = 1;
+	else
+		menuFlag = 0;
+}
+
+
+void processMainMenu(int option)
+{
+	switch (option)
+	{
+	case RESTARTMENU:
+		turning_angle = 0.0;
+		rover_angle = 0.0;
+		rotation = 0.0;
+		speed = 0.0;
+		angular_speed = 0.0;
+		pos_x = 0;
+		pos_z = 0;
+		pos_y = 2.2;
+
+		backMiddle[0] = 0.0;
+		backMiddle[1] = 5.0;
+		backMiddle[2] = 0.0;
+		backWheels[0] = 0.0;
+		backWheels[1] = 2.2;
+		backWheels[2] = 0.0;
+		frontWheels[0] = 9.0;
+		frontWheels[1] = 2.2;
+		frontWheels[2] = 0.0;
+		frontMiddle[0] = 0.0;
+		frontMiddle[1] = 5.0;
+		frontMiddle[2] = 10.0;
+		canMove = 1;
+
+		for (int i = 0; i < numberOfStars; i++)
+		{
+			isStar[i][1] = 1;	//creating stars back
+		}
+	}
+}
+
+
+
+void processModeMenu(int option) {
+
+	switch (option)
+	{
+	case EASY:;
+	case HARD:;
+	}
+}
+
+
+void createPopupMenus()
+{
+	//mode menu options
+	modeMenu = glutCreateMenu(processModeMenu);
+	glutAddMenuEntry("Easy", EASY);
+	glutAddMenuEntry("Hard", HARD);
+
+	//main menu options
+	mainMenu = glutCreateMenu(processMainMenu);
+	glutAddSubMenu("Mode", modeMenu);
+	glutAddMenuEntry("Restart", RESTARTMENU);
+
+	// attach the menu to the right button
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+
+	// this will allow us to know if the menu is active
+	glutMenuStatusFunc(processMenuStatus);
+}
+
 
 void init(unsigned char* data)
 {
@@ -131,35 +226,16 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		rotation = 0.8 / tan(turning_angle / (180 / GL_PI));	//calculating the rotation of rover
 		angular_speed = -speed / rotation;	//calculating the angular_speed
 		break;
-	case 't':
-		//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA DAÆ TO DO SPRAWKA Z FABU£¥ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-		//reseting the variables, so rover goes to it's start position
-		turning_angle = 0.0;
-		rover_angle = 0.0;
-		rotation = 0.0;
-		speed = 0.0;
-		angular_speed = 0.0;
-		pos_x = 0;
-		pos_z = 0;
-		pos_y = 2.2;
-
-		backMiddle[0] = 0.0;
-		backMiddle[1] = 5.0;
-		backMiddle[2] = 0.0;
-		backWheels[0] = 0.0;
-		backWheels[1] = 2.2;
-		backWheels[2] = 0.0;
-		frontWheels[0] = 9.0;
-		frontWheels[1] = 2.2;
-		frontWheels[2] = 0.0;
-		frontMiddle[0] = 0.0;
-		frontMiddle[1] = 5.0;
-		frontMiddle[2] = 10.0;
-		canMove = 1;
-
+	case 27:
+		glutDestroyMenu(mainMenu);
+		glutDestroyMenu(modeMenu);
+		exit(0);
 		break;
 	}
+	if (key == 27)
+		exit(0);
 }
+
 
 void timerCallback(int value)
 {
@@ -413,10 +489,12 @@ int main(int argc, char** argv)
 	glutIdleFunc(renderScene);
 	// here are the new entries
 	glutKeyboardFunc(processKeyboardKeys);
-	//OpenGL init
+	// OpenGL init
 	glEnable(GL_DEPTH_TEST);
 	//Glut timer
 	glutTimerFunc(100, timerCallback, 0);
+	// init Menus
+	createPopupMenus();
 	//correcting the collisions table, so objects also have collisions
 	for (int i = 69; i <= 71; i++)
 	{
