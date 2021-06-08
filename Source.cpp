@@ -12,21 +12,15 @@
 
 
 // Constant definitions for Menus
+#define RESTARTMENU 1
 #define EASY 1
 #define HARD 2
-#define RESTARTMENU 1
 
 // Pop up menu identifiers
-int modeMenu, mainMenu;
+int modesTime, modesSpeed, mainMenu;
 
 // menu status
 int menuFlag = 0;
-
-// color for the nose
-float red = 1.0f, blue = 0.5f, green = 0.5f;
-
-// scale of snowman
-float scale = 1.0f;
 
 // XZ position of the camera
 float x = 0.0f, z = 0.0f, y = 15.0f;
@@ -37,23 +31,23 @@ Interpreter textures = Interpreter("tekstury.obj");
 Interpreter cube = Interpreter("cube.obj");
 Interpreter icosphere = Interpreter("Icosphere.obj");
 
+//collisions map
+Vertices coordinates = Vertices("tekstury.obj");
+
 //object for collecting points
 Interpreter star = Interpreter("gwiazda.obj");
 float stars[600][600];	//stars collecting table
 
 //variables for stars collecting
-const int numberOfStars = 3;
-float starsPos[numberOfStars][3] = {{13.0, 0.0, 0.0},
-						{0.0, 0.0, 22.0},
-						{32.0, 0.0, 12.0}};	//bools for rendering stars
+int numberOfStars = 6 + (rand() * (int)(12 - 6) / RAND_MAX);
 
-int isStar[numberOfStars][2] = {{0, 1},
-					{1, 1},
-					{2, 1}};	//bools for rendering stars
+vector<vector<int> > starsPos(numberOfStars, vector<int>(3));
+vector<vector<int> > isStar(numberOfStars, vector<int>(3));
 
+//variables for star random stars coordinates
+float randomX = 0.0;
+float randomZ = 0.0;
 
-//collisions map
-Vertices coordinates = Vertices("tekstury.obj");
 
 //rover's x and y coordinates
 float pos_x = 0;
@@ -127,32 +121,124 @@ void processMainMenu(int option)
 		{
 			isStar[i][1] = 1;	//creating stars back
 		}
+		break;
 	}
 }
 
-
-
-void processModeMenu(int option) {
+void processmodesTime(int option) {
 
 	switch (option)
 	{
-	case EASY:;
-	case HARD:;
+	case EASY:
+		numberOfStars = 8 + (rand() * (int)(15 - 8) / RAND_MAX);
+		starsPos.resize(numberOfStars, vector<int>(3));
+		isStar.resize(numberOfStars, vector<int>(2));
+		for (int i = 0; i < numberOfStars; ++i)
+		{
+			randomX = -100 + (rand() / (RAND_MAX / (200)));
+			randomZ = -100 + (rand() / (RAND_MAX / (200)));
+			while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
+			{
+				randomX = -100 + (rand() / (RAND_MAX / (200)));
+				randomZ = -100 + (rand() / (RAND_MAX / (200)));
+			}
+			starsPos[i][0] = randomX;
+			starsPos[i][2] = randomZ;
+			starsPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
+			isStar[i][0] = i;	//giving every star a unique index
+			isStar[i][1] = 1;	//this is a flag, if it's 1, the star is rendered, if it's 0, it's not
+			processMainMenu(RESTARTMENU);
+		}
+		break;
+	case HARD:
+		numberOfStars = 15 + (rand() * (int)(40 - 15) / RAND_MAX);
+		starsPos.resize(numberOfStars, vector<int>(3));
+		isStar.resize(numberOfStars, vector<int>(2));
+		for (int i = 0; i < numberOfStars; ++i)
+		{
+			randomX = -297 + (rand() / (RAND_MAX / (297 + 297)));
+			randomZ = -297 + (rand() / (RAND_MAX / (297 + 297)));
+			while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
+			{
+				randomX = -300 + (rand() / (RAND_MAX / (297 + 297)));
+				randomZ = -300 + (rand() / (RAND_MAX / (297 + 297)));
+			}
+			starsPos[i][0] = randomX;
+			starsPos[i][2] = -297 + (rand() / (RAND_MAX / (297 + 297)));
+			starsPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
+			isStar[i][0] = i;	//giving every star a unique index
+			isStar[i][1] = 1;	//this is a flag, if it's 1, the star is rendered, if it's 0, it's not
+			processMainMenu(RESTARTMENU);
+		}
+		break;
 	}
 }
 
+void processmodesSpeed(int option) {
+
+	switch (option)
+	{
+	case EASY:
+		numberOfStars = 8 + (rand() * (int)(15 - 8) / RAND_MAX);
+		starsPos.resize(numberOfStars, vector<int>(3));
+		isStar.resize(numberOfStars, vector<int>(2));
+		for (int i = 0; i < numberOfStars; ++i)
+		{
+			randomX = -100 + (rand() / (RAND_MAX / (200)));
+			randomZ = -100 + (rand() / (RAND_MAX / (200)));
+			while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
+			{
+				randomX = -100 + (rand() / (RAND_MAX / (200)));
+				randomZ = -100 + (rand() / (RAND_MAX / (200)));
+			}
+			starsPos[i][0] = randomX;
+			starsPos[i][2] = randomZ;
+			starsPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
+			isStar[i][0] = i;	//giving every star a unique index
+			isStar[i][1] = 1;	//this is a flag, if it's 1, the star is rendered, if it's 0, it's not
+			processMainMenu(RESTARTMENU);
+		}
+		break;
+	case HARD:
+		numberOfStars = 15 + (rand() * (int)(40 - 15) / RAND_MAX);
+		starsPos.resize(numberOfStars, vector<int>(3));
+		isStar.resize(numberOfStars, vector<int>(2));
+		for (int i = 0; i < numberOfStars; ++i)
+		{
+			randomX = -297 + (rand() / (RAND_MAX / (297 + 297)));
+			randomZ = -297 + (rand() / (RAND_MAX / (297 + 297)));
+			while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
+			{
+				randomX = -300 + (rand() / (RAND_MAX / (297 + 297)));
+				randomZ = -300 + (rand() / (RAND_MAX / (297 + 297)));
+			}
+			starsPos[i][0] = randomX;
+			starsPos[i][2] = -297 + (rand() / (RAND_MAX / (297 + 297)));
+			starsPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
+			isStar[i][0] = i;	//giving every star a unique index
+			isStar[i][1] = 1;	//this is a flag, if it's 1, the star is rendered, if it's 0, it's not
+			processMainMenu(RESTARTMENU);
+		}
+		break;
+	}
+}
 
 void createPopupMenus()
 {
 	//mode menu options
-	modeMenu = glutCreateMenu(processModeMenu);
+	modesTime = glutCreateMenu(processmodesTime);
+	glutAddMenuEntry("Easy", EASY);
+	glutAddMenuEntry("Hard", HARD);
+
+	modesSpeed = glutCreateMenu(processmodesSpeed);
 	glutAddMenuEntry("Easy", EASY);
 	glutAddMenuEntry("Hard", HARD);
 
 	//main menu options
 	mainMenu = glutCreateMenu(processMainMenu);
-	glutAddSubMenu("Mode", modeMenu);
-	glutAddMenuEntry("Restart", RESTARTMENU);
+	glutAddMenuEntry("Restart the game round", RESTARTMENU);
+	glutAddSubMenu("Collecting stars on time", modesTime);
+	glutAddSubMenu("Collecting stars on time", modesSpeed);
 
 	// attach the menu to the right button
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
@@ -228,7 +314,7 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		break;
 	case 27:
 		glutDestroyMenu(mainMenu);
-		glutDestroyMenu(modeMenu);
+		glutDestroyMenu(modesTime);
 		exit(0);
 		break;
 	}
@@ -314,6 +400,7 @@ void starsCollecting()
 	}
 }
 
+
 void renderScene(void) {
 	// Clear Color and Depth Buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -371,8 +458,6 @@ void renderScene(void) {
 	{
 		pos_x += cos(rover_angle) * speed;	//calculating the new X coordinate
 		pos_z += -sin(rover_angle) * speed;	//calculating the new Z coordinate
-
-		cout << frontWheels[1] + 1.5 << " " <<  coordinates.vertices[int(frontWheels[0]) + 300][int(frontWheels[2]) + 300] << endl;
 
 		glPushMatrix();	//stacinkg the object
 		glTranslatef(pos_x, 0, pos_z);	//moving the rotation center to rover
@@ -498,12 +583,29 @@ int main(int argc, char** argv)
 	//correcting the collisions table, so objects also have collisions
 	for (int i = 69; i <= 71; i++)
 	{
-		for (int j = -10; j <= 10; j++)	coordinates.vertices[i + 300][j + 300] = 200;
+		for (int j = -10; j <= 10; j++)	coordinates.vertices[i + 300][j + 300] = 600;
 	}
 	for (int i = -10; i <= 10; i++)
 	{
-		for (int j = -60; j <= -40; j++)	coordinates.vertices[i + 300][j + 300] = 200;
+		for (int j = -60; j <= -40; j++)	coordinates.vertices[i + 300][j + 300] = 600;
 	}
+	
+	for (int i = 0; i < numberOfStars; ++i)
+	{
+		randomX = -100 + (rand() / (RAND_MAX / (200)));
+		randomZ = -100 + (rand() / (RAND_MAX / (200)));
+		while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
+		{
+			randomX = -100 + (rand() / (RAND_MAX / (200)));
+			randomZ = -100 + (rand() / (RAND_MAX / (200)));
+		}
+		starsPos[i][0] = randomX;
+		starsPos[i][2] = randomZ;
+		starsPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
+		isStar[i][0] = i;	//giving every star a unique index
+		isStar[i][1] = 1;	//this is a flag, if it's 1, the star is rendered, if it's 0, it's not
+	}
+
 	// enter GLUT event processing cycle
 	glutMainLoop();
 	return 0;
