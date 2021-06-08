@@ -10,6 +10,7 @@
 #include "Vertices.h"
 #define GL_PI 3.14
 
+
 // XZ position of the camera
 float x = 0.0f, z = 0.0f, y = 15.0f;
 static GLuint textureName;
@@ -21,6 +22,17 @@ Interpreter icosphere = Interpreter("Icosphere.obj");
 
 //object for collecting points
 Interpreter star = Interpreter("gwiazda.obj");
+float stars[600][600];	//stars collecting table
+
+const int numberOfStars = 3;
+float starsPos[numberOfStars][3] = {{13.0, 0.0, 0.0},
+						{0.0, 0.0, 22.0},
+						{32.0, 0.0, 12.0}};	//bools for rendering stars
+
+int isStar[numberOfStars][2] = {{0, 1},
+					{1, 1},
+					{2, 1}};	//bools for rendering stars
+
 
 //collisions map
 Vertices coordinates = Vertices("tekstury.obj");
@@ -47,7 +59,7 @@ float diode_time = 0;
 
 //collision points
 float backMiddle[] = {0.0, 5.0, 0.0 };
-float backWheels[] = { 1.0, 2.2, 0.0 };
+float backWheels[] = { 0.0, 2.2, 0.0 };
 float frontWheels[] = { 9.0, 2.2, 0.0 };
 float frontMiddle[] = { 10.0, 5.0, 0.0 };
 float cameraPos[] = { -15.0, 25.0, 0.0 };
@@ -94,7 +106,7 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 {
 	switch (key) {
 	case 'w':
-		if (speed < 1.5)	speed += 0.03;	// increasing speed till limit when moving forward, or decreasing speed when moving backwards
+		if (speed < 1.5)	speed += 0.06;	// increasing speed till limit when moving forward, or decreasing speed when moving backwards
 		if (turning_angle == 0)	//when turning angle is 0
 		{
 			rotation = 0;	//rover is not rotating
@@ -102,7 +114,7 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		}
 		break;
 	case 's':
-		if (speed > -1.0)	speed -= 0.03;	//decreasing speed till limit when moveing forward, or increasing speed when moving backwards
+		if (speed > -1.0)	speed -= 0.06;	//decreasing speed till limit when moveing forward, or increasing speed when moving backwards
 		if (turning_angle == 0)	//when turning angle is 0
 		{
 			rotation = 0;	//rover is not rotating
@@ -110,12 +122,12 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		}
 		break;
 	case 'd':
-		turning_angle += 8;	//increasing turning angle by 8 degrees
+		turning_angle += 4;	//increasing turning angle by 8 degrees
 		rotation = 0.8 / tan(turning_angle / (180 / GL_PI));	//calculating the rotation of rover
 		angular_speed = -speed / rotation;	//calculating the angular_speed
 		break;
 	case 'a':
-		turning_angle -= 8;	//decreasing turning angle by 8 degrees
+		turning_angle -= 4;	//decreasing turning angle by 8 degrees
 		rotation = 0.8 / tan(turning_angle / (180 / GL_PI));	//calculating the rotation of rover
 		angular_speed = -speed / rotation;	//calculating the angular_speed
 		break;
@@ -134,7 +146,7 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		backMiddle[0] = 0.0;
 		backMiddle[1] = 5.0;
 		backMiddle[2] = 0.0;
-		backWheels[0] = 1.0;
+		backWheels[0] = 0.0;
 		backWheels[1] = 2.2;
 		backWheels[2] = 0.0;
 		frontWheels[0] = 9.0;
@@ -164,14 +176,17 @@ bool collisionDetection()
 	backWheels[0] += cos(rover_angle) * speed;
 	frontWheels[0] = pos_x  + cos(rover_angle) * 10;
 	frontMiddle[0] = pos_x + cos(rover_angle) * 10;
-	cameraPos[0] = pos_x + cos(rover_angle) * (-15.0);
 
 	//calculating the Z position of rover
 	backMiddle[2] += -sin(rover_angle) * speed;
 	backWheels[2] += -sin(rover_angle) * speed;
 	frontWheels[2] = pos_z  - sin(rover_angle) * 10;
 	frontMiddle[2] = pos_z - sin(rover_angle) * 10;
+
+	//calculating the camera position
+	cameraPos[0] = pos_x + cos(rover_angle) * (-15.0);
 	cameraPos[2] = pos_z - sin(rover_angle) * (-15.0);
+	cameraPos[1] = pos_y + 22.8;
 
 	//checking if there is collision, and if is return 1
 	if (coordinates.vertices[int(frontMiddle[0]) + 300][int(frontMiddle[2]) + 300] >= frontMiddle[1] - 1.2)	return 0;
@@ -183,17 +198,44 @@ bool collisionDetection()
 	return 1;
 }
 
-void StarDrawing(float starX, float starY, float starZ)
+void StarDrawing(float starX, float starY, float starZ, int index)
 {
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();	//stacking the object
-	glColor3f(1.0, 0.827, 0);	//yellow colour
+	if (isStar[index][1] == 1)	//if star wasn't collected
+	{
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();	//stacking the object
+		glColor3f(1.0, 0.827, 0);	//yellow colour
 
-	glTranslatef(starX, 0, starZ);	//moving it back
-	glRotatef(-antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the star
-	glTranslatef(-starX, 0, -starZ);	//moving the rotation center to star
-	star.DrawStar(starX, starY, starZ);	//rendering the star
-	glPopMatrix();	//unstacinkg the object
+		glTranslatef(starX, starY, starZ);	//moving it back
+		glRotatef(-antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the star
+		glTranslatef(-starX, -starY, -starZ);	//moving the rotation center to star
+		star.DrawStar(starX, starY, starZ);	//rendering the star
+		glPopMatrix();	//unstacinkg the object
+
+
+		//filling stars collecting table
+		for (int i = starX - 3; i < starX + 3; i++)
+		{
+			for (int j = starZ - 3; j < starZ + 3; j++)
+			{
+				stars[i + 300][j + 300] = 200;	//changing Y coordinate for stars collecting table
+			}
+		}
+	}
+}
+
+void starsCollecting()
+{
+	if (stars[int(frontMiddle[0]) + 300][int(frontMiddle[2]) + 300] >= frontMiddle[1])	//if front of rover meets star
+	for (int i = 0; i < numberOfStars; i++)
+	{
+		if (abs(frontMiddle[0] - starsPos[i][0]) < 3 && abs(frontMiddle[2] - starsPos[i][2]) < 3)	isStar[i][1] = 0;	//star dissapears
+	}
+	if (stars[int(backMiddle[0]) + 300][int(backMiddle[2]) + 300] >= backMiddle[1])	//if back of rover meets star
+	for (int i = 0; i < numberOfStars; i++)
+	{
+		if (abs(backMiddle[0] - starsPos[i][0]) < 3 && abs(backMiddle[2] - starsPos[i][2]) < 3)	isStar[i][1] = 0;	//star dissapears
+	}
 }
 
 void renderScene(void) {
@@ -204,30 +246,37 @@ void renderScene(void) {
 	glLoadIdentity();
 
 	rover_angle += angular_speed;	//calculating the angle by angular speed
-	canMove = collisionDetection();	//detecting possible collisions
 
 	// Set the camera
-	gluLookAt(cameraPos[0], cameraPos[1], cameraPos[2], x + frontWheels[0], y, z + frontWheels[2], 0.0f, 1.0f, 0.0f);
+	gluLookAt(cameraPos[0], cameraPos[1], cameraPos[2], x + frontWheels[0], y + cameraPos[1] - 25, z + frontWheels[2], 0.0f, 1.0f, 0.0f);
 	
+	//rendering ground with textures
 	glColor3f(1.0, 1.0, 1.0);
 	init(stbi_load("textures.jpg", &width, &height, &nrChannels, 0));
 	textures.DrawT();
 	glDeleteTextures(1, &textureName);
 	
+	//rendering object with textures
 	init(stbi_load("stone.jpg", &width, &height, &nrChannels, 0));
 	icosphere.DrawT();
 	glDeleteTextures(1, &textureName);
 
+	//rendering object without textures
 	glColor3f(0, 0, 0);
 	cube.Draw();
 
 	//changing antennas' rotation variables
-	antenna_angle += 0.01;
+	antenna_angle += 0.02;
 	antenna_rotation = 1 / tan(antenna_angle / (180 / GL_PI));
 
-	StarDrawing(0.0, 12.0, 0.0);
-	StarDrawing(0.0, 12.0, 12.0);
-	StarDrawing(12.0, 12.0, 0.0);
+	canMove = collisionDetection();	//detecting possible collisions
+	starsCollecting();	//checking if there is star collected
+
+	//rendering all stars
+	for (int i = 0; i < numberOfStars; i++)
+	{
+		StarDrawing(starsPos[i][0], starsPos[i][1] + 12, starsPos[i][2], isStar[i][0]);
+	}
 
 
 	//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA DAÆ TO DO SPRAWKA Z FABU£¥ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -247,7 +296,7 @@ void renderScene(void) {
 		pos_x += cos(rover_angle) * speed;	//calculating the new X coordinate
 		pos_z += -sin(rover_angle) * speed;	//calculating the new Z coordinate
 
-		cout << frontWheels[0] << " " << frontWheels[2] << " " << pos_x << " " << pos_z << endl;
+		cout << frontWheels[1] + 1.5 << " " <<  coordinates.vertices[int(frontWheels[0]) + 300][int(frontWheels[2]) + 300] << endl;
 
 		glPushMatrix();	//stacinkg the object
 		glTranslatef(pos_x, 0, pos_z);	//moving the rotation center to rover
@@ -281,7 +330,6 @@ void renderScene(void) {
 	}
 	else	//if there is collision
 	{
-		
 		pos_x -=  2 * cos(rover_angle) * speed;	//calculating the new X coordinate
 		pos_z -=  2 * -sin(rover_angle) * speed;	//calculating the new Z coordinate
 
@@ -318,6 +366,7 @@ void renderScene(void) {
 		glPopMatrix();	//unstacinkg the object
 	}
 	
+	//showing ground vertices
 	/*
 	for (int i = 0; i <= 600; i++)
 	{
@@ -332,6 +381,20 @@ void renderScene(void) {
 	}
 	*/
 
+	//showing stars vertices
+	/*
+	for (int i = 0; i <= 600; i++)
+	{
+		for (int j = 0; j <= 600; j++)
+		{
+			glColor3f(0.0, 1.0, 0.0);
+			glBegin(GL_POINTS);
+			glVertex3f(i - 300, stars[i][j], j - 300);
+			glEnd();
+		}
+		cout << endl;
+	}
+	*/
 
 	glutSwapBuffers();
 }
@@ -357,11 +420,11 @@ int main(int argc, char** argv)
 	//correcting the collisions table, so objects also have collisions
 	for (int i = 69; i <= 71; i++)
 	{
-		for (int j = -10; j <= 10; j++)	coordinates.vertices[i + 300][j + 300] = 20;
+		for (int j = -10; j <= 10; j++)	coordinates.vertices[i + 300][j + 300] = 200;
 	}
 	for (int i = -10; i <= 10; i++)
 	{
-		for (int j = -60; j <= -40; j++)	coordinates.vertices[i + 300][j + 300] = 20;
+		for (int j = -60; j <= -40; j++)	coordinates.vertices[i + 300][j + 300] = 200;
 	}
 	// enter GLUT event processing cycle
 	glutMainLoop();
