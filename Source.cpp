@@ -8,13 +8,8 @@
 #include "interpreter.h"
 #include "Lazik.h"
 #include "Vertices.h"
-
 #define GL_PI 3.14
 
-// angle of rotation for the camera direction
-float camera_angle = 1.5;
-// actual vector representing the camera's direction
-float lx = 1.0f, lz = 0.0f, ly = -0.5f;
 // XZ position of the camera
 float x = 0.0f, z = 0.0f, y = 15.0f;
 static GLuint textureName;
@@ -24,7 +19,7 @@ Interpreter textures = Interpreter("tekstury.obj");
 Interpreter cube = Interpreter("cube.obj");
 Interpreter icosphere = Interpreter("Icosphere.obj");
 
-//objects for collecting points
+//object for collecting points
 Interpreter star = Interpreter("gwiazda.obj");
 
 //collisions map
@@ -55,6 +50,7 @@ float backMiddle[] = {0.0, 5.0, 0.0 };
 float backWheels[] = { 1.0, 2.2, 0.0 };
 float frontWheels[] = { 9.0, 2.2, 0.0 };
 float frontMiddle[] = { 10.0, 5.0, 0.0 };
+float cameraPos[] = { -15.0, 25.0, 0.0 };
 
 //collision checking variable
 bool canMove = 1;
@@ -93,37 +89,6 @@ void changeSize(int w, int h)
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void processSpecialKeys(int key, int xx, int yy) {
-
-	switch (key) {
-	case GLUT_KEY_LEFT:	//turn left
-		camera_angle -= 0.1f;
-		lx = sin(camera_angle);
-		lz = -cos(camera_angle);
-		break;
-	case GLUT_KEY_RIGHT:	//turn right
-		camera_angle += 0.1f;
-		lx = sin(camera_angle);
-		lz = -cos(camera_angle);
-		break;
-	case GLUT_KEY_UP:	//move forward
-		y += ly;
-		x += lx;
-		z += lz;
-		break;
-	case GLUT_KEY_DOWN:	//move backward
-		y -= ly;
-		x -= lx;
-		z -= lz;
-		break;
-	case GLUT_KEY_F1:	//turn up
-		ly +=0.1f;
-		break;
-	case GLUT_KEY_F2:	//turn down
-		ly -= 0.1f;
-		break;
-	}
-}
 
 void processKeyboardKeys(unsigned char key, int x, int y)
 {
@@ -199,12 +164,14 @@ bool collisionDetection()
 	backWheels[0] += cos(rover_angle) * speed;
 	frontWheels[0] = pos_x  + cos(rover_angle) * 10;
 	frontMiddle[0] = pos_x + cos(rover_angle) * 10;
+	cameraPos[0] = pos_x + cos(rover_angle) * (-15.0);
 
 	//calculating the Z position of rover
 	backMiddle[2] += -sin(rover_angle) * speed;
 	backWheels[2] += -sin(rover_angle) * speed;
 	frontWheels[2] = pos_z  - sin(rover_angle) * 10;
 	frontMiddle[2] = pos_z - sin(rover_angle) * 10;
+	cameraPos[2] = pos_z - sin(rover_angle) * (-15.0);
 
 	//checking if there is collision, and if is return 1
 	if (coordinates.vertices[int(frontMiddle[0]) + 300][int(frontMiddle[2]) + 300] >= frontMiddle[1] - 1.2)	return 0;
@@ -222,9 +189,9 @@ void StarDrawing(float starX, float starY, float starZ)
 	glPushMatrix();	//stacking the object
 	glColor3f(1.0, 0.827, 0);	//yellow colour
 
-	glTranslatef(starX, 0, starZ);	//moving the rotation center to star
+	glTranslatef(starX, 0, starZ);	//moving it back
 	glRotatef(-antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the star
-	glTranslatef(-starX, 0, -starZ);	//moving it back
+	glTranslatef(-starX, 0, -starZ);	//moving the rotation center to star
 	star.DrawStar(starX, starY, starZ);	//rendering the star
 	glPopMatrix();	//unstacinkg the object
 }
@@ -235,8 +202,12 @@ void renderScene(void) {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);
 	// Reset transformations
 	glLoadIdentity();
+
+	rover_angle += angular_speed;	//calculating the angle by angular speed
+	canMove = collisionDetection();	//detecting possible collisions
+
 	// Set the camera
-	gluLookAt(x, y, z, x + lx, y + ly, z + lz, 0.0f, 1.0f, 0.0f);
+	gluLookAt(cameraPos[0], cameraPos[1], cameraPos[2], x + frontWheels[0], y, z + frontWheels[2], 0.0f, 1.0f, 0.0f);
 	
 	glColor3f(1.0, 1.0, 1.0);
 	init(stbi_load("textures.jpg", &width, &height, &nrChannels, 0));
@@ -258,9 +229,6 @@ void renderScene(void) {
 	StarDrawing(0.0, 12.0, 12.0);
 	StarDrawing(12.0, 12.0, 0.0);
 
-	rover_angle += angular_speed;	//calculating the angle by angular speed
-
-	canMove = collisionDetection();	//detecting possible collisions
 
 	//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA DAÆ TO DO SPRAWKA Z FABU£¥ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 	if (coordinates.vertices[int(frontWheels[0]) + 300][int(frontWheels[2]) + 300] < frontWheels[1] && coordinates.vertices[int(backWheels[0]) + 300][int(backWheels[2]) + 300] < backWheels[1])
@@ -381,7 +349,6 @@ int main(int argc, char** argv)
 	glutReshapeFunc(changeSize);
 	glutIdleFunc(renderScene);
 	// here are the new entries
-	glutSpecialFunc(processSpecialKeys);
 	glutKeyboardFunc(processKeyboardKeys);
 	//OpenGL init
 	glEnable(GL_DEPTH_TEST);
