@@ -10,7 +10,6 @@
 #include "Vertices.h"
 #define GL_PI 3.14
 
-
 // Constant definitions for Menus
 #define RESTARTMENU 1
 #define EASY 1
@@ -53,6 +52,7 @@ float randomZ = 0.0;
 float pos_x = 0;
 float pos_z = 0;
 float pos_y = 2.2;
+
 //rover's rotation variables
 float turning_angle = 0.0;
 float rover_angle = 0.0;
@@ -74,7 +74,11 @@ float backMiddle[] = {0.0, 5.0, 0.0 };
 float backWheels[] = { 0.0, 2.2, 0.0 };
 float frontWheels[] = { 9.0, 2.2, 0.0 };
 float frontMiddle[] = { 10.0, 5.0, 0.0 };
+
+//camera additional variables
 float cameraPos[] = { -15.0, 25.0, 0.0 };
+float cameraX = 0.0;
+float cameraZ = 0.0;
 
 //collision checking variable
 bool canMove = 1;
@@ -312,6 +316,22 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		rotation = 0.8 / tan(turning_angle / (180 / GL_PI));	//calculating the rotation of rover
 		angular_speed = -speed / rotation;	//calculating the angular_speed
 		break;
+	case '+':
+		cameraX += cos(rover_angle) * 2;
+		cameraZ += -sin(rover_angle) * 2;
+		cameraPos[0] = pos_x + cos(rover_angle) * (-15.0) + cameraX;
+		cameraPos[2] = pos_z - sin(rover_angle) * (-15.0) + cameraZ;
+		cameraPos[1] = pos_y + 22.8;
+		cout << cameraX << " " << cameraZ << endl;
+		break;
+	case '-':
+		cameraX += - cos(rover_angle) * 2;
+		cameraZ += sin(rover_angle) * 2;
+		cameraPos[0] = pos_x + cos(rover_angle) * (-15.0) + cameraX;
+		cameraPos[2] = pos_z - sin(rover_angle) * (-15.0) + cameraZ;
+		cameraPos[1] = pos_y + 22.8;
+		cout << cameraX << " " << cameraZ << endl;
+		break;
 	case 27:
 		glutDestroyMenu(mainMenu);
 		glutDestroyMenu(modesTime);
@@ -346,8 +366,8 @@ bool collisionDetection()
 	frontMiddle[2] = pos_z - sin(rover_angle) * 10;
 
 	//calculating the camera position
-	cameraPos[0] = pos_x + cos(rover_angle) * (-15.0);
-	cameraPos[2] = pos_z - sin(rover_angle) * (-15.0);
+	cameraPos[0] = pos_x + cos(rover_angle) * (-15.0) + cameraX;
+	cameraPos[2] = pos_z - sin(rover_angle) * (-15.0) + cameraZ;
 	cameraPos[1] = pos_y + 22.8;
 
 	//checking if there is collision, and if is return 1
@@ -580,7 +600,7 @@ int main(int argc, char** argv)
 	glutTimerFunc(100, timerCallback, 0);
 	// init Menus
 	createPopupMenus();
-	//correcting the collisions table, so objects also have collisions
+		//correcting the collisions table, so objects also have collisions
 	for (int i = 69; i <= 71; i++)
 	{
 		for (int j = -10; j <= 10; j++)	coordinates.vertices[i + 300][j + 300] = 600;
