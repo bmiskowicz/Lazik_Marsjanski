@@ -8,15 +8,20 @@
 #include "interpreter.h"
 #include "Lazik.h"
 #include "Vertices.h"
+#include <string>
+#include <iostream>
 #define GL_PI 3.14
 
 // Constant definitions for Menus
 #define RESTARTMENU 1
-#define EASY 1
-#define HARD 2
+#define LVL1 1
+#define LVL2 2
+#define LVL3 3
+#define THIRDPERSON 1
+#define DISTANCE 2
 
 // Pop up menu identifiers
-int modesTime, modesSpeed, mainMenu;
+int modesTime, modesSpeed, modesCamera, mainMenu, gameModes, easyTime, hardTime, easySpeed, hardSpeed;
 
 // menu status
 int menuFlag = 0;
@@ -25,6 +30,7 @@ int menuFlag = 0;
 float x = 0.0f, z = 0.0f, y = 15.0f;
 static GLuint textureName;
 int width, height, nrChannels;
+
 //objects from blender
 Interpreter textures = Interpreter("tekstury.obj");
 Interpreter cube = Interpreter("cube.obj");
@@ -37,11 +43,14 @@ Vertices coordinates = Vertices("tekstury.obj");
 Interpreter star = Interpreter("gwiazda.obj");
 float stars[600][600];	//stars collecting table
 
-//variables for stars collecting
-int numberOfStars = 6 + (rand() * (int)(12 - 6) / RAND_MAX);
+//variables for number of stars in level
+int min_stars = 1;
+int max_stars = 8;
 
+//variables for stars collecting
+int numberOfStars = min_stars + (rand() * (int)(max_stars - min_stars) / RAND_MAX);
 vector<vector<int> > starsPos(numberOfStars, vector<int>(3));
-vector<vector<int> > isStar(numberOfStars, vector<int>(3));
+vector<vector<int> > isStar(numberOfStars, vector<int>(2));
 
 //variables for star random stars coordinates
 float randomX = 0.0;
@@ -82,6 +91,15 @@ float cameraZ = 0.0;
 
 //collision checking variable
 bool canMove = 1;
+
+//variable giving different timer height for each camera mode
+float timerY = 1.5;
+
+//timer variables for writing it out
+float timer = 0.0;
+string timerstring = to_string(timer);
+const char* timerChars = timerstring.c_str();
+
 
 
 void processMenuStatus(int status, int x, int y)
@@ -129,120 +147,155 @@ void processMainMenu(int option)
 	}
 }
 
-void processmodesTime(int option) {
+
+void processmodesCamera(int option) {
 
 	switch (option)
 	{
-	case EASY:
-		numberOfStars = 8 + (rand() * (int)(15 - 8) / RAND_MAX);
-		starsPos.resize(numberOfStars, vector<int>(3));
-		isStar.resize(numberOfStars, vector<int>(2));
-		for (int i = 0; i < numberOfStars; ++i)
-		{
-			randomX = -100 + (rand() / (RAND_MAX / (200)));
-			randomZ = -100 + (rand() / (RAND_MAX / (200)));
-			while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
-			{
-				randomX = -100 + (rand() / (RAND_MAX / (200)));
-				randomZ = -100 + (rand() / (RAND_MAX / (200)));
-			}
-			starsPos[i][0] = randomX;
-			starsPos[i][2] = randomZ;
-			starsPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
-			isStar[i][0] = i;	//giving every star a unique index
-			isStar[i][1] = 1;	//this is a flag, if it's 1, the star is rendered, if it's 0, it's not
-			processMainMenu(RESTARTMENU);
-		}
+	case THIRDPERSON:
+		timerY = 1.5;
+		cameraX = 0.0;
+		cameraZ = 0.0;
 		break;
-	case HARD:
-		numberOfStars = 15 + (rand() * (int)(40 - 15) / RAND_MAX);
-		starsPos.resize(numberOfStars, vector<int>(3));
-		isStar.resize(numberOfStars, vector<int>(2));
-		for (int i = 0; i < numberOfStars; ++i)
-		{
-			randomX = -297 + (rand() / (RAND_MAX / (297 + 297)));
-			randomZ = -297 + (rand() / (RAND_MAX / (297 + 297)));
-			while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
-			{
-				randomX = -300 + (rand() / (RAND_MAX / (297 + 297)));
-				randomZ = -300 + (rand() / (RAND_MAX / (297 + 297)));
-			}
-			starsPos[i][0] = randomX;
-			starsPos[i][2] = -297 + (rand() / (RAND_MAX / (297 + 297)));
-			starsPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
-			isStar[i][0] = i;	//giving every star a unique index
-			isStar[i][1] = 1;	//this is a flag, if it's 1, the star is rendered, if it's 0, it's not
-			processMainMenu(RESTARTMENU);
-		}
+	case DISTANCE:
+		timerY = 2.0;
+		cameraX = 60.0;
+		cameraZ = -0.5;
 		break;
 	}
 }
 
-void processmodesSpeed(int option) {
+
+void processSpeedLevels(int option) {
 
 	switch (option)
 	{
-	case EASY:
-		numberOfStars = 8 + (rand() * (int)(15 - 8) / RAND_MAX);
-		starsPos.resize(numberOfStars, vector<int>(3));
-		isStar.resize(numberOfStars, vector<int>(2));
-		for (int i = 0; i < numberOfStars; ++i)
+	case LVL1:
+		//variables for number of stars in level
+		numberOfStars = 5;
+	case LVL2:
+		//variables for number of stars in level
+		numberOfStars = 15;
+	case LVL3:
+		//variables for number of stars in level
+		numberOfStars = 25;
+	}
+	//variables for stars collecting
+	starsPos.resize(numberOfStars, vector<int>(3));
+	isStar.resize(numberOfStars, vector<int>(2));
+
+	numberOfStars = 8 + (rand() * (int)(15 - 8) / RAND_MAX);
+	for (int i = 0; i < numberOfStars; ++i)
+	{
+		randomX = -297 + (rand() / (RAND_MAX / (597)));
+		randomZ = -297 + (rand() / (RAND_MAX / (597)));
+		while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
 		{
-			randomX = -100 + (rand() / (RAND_MAX / (200)));
-			randomZ = -100 + (rand() / (RAND_MAX / (200)));
-			while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
-			{
-				randomX = -100 + (rand() / (RAND_MAX / (200)));
-				randomZ = -100 + (rand() / (RAND_MAX / (200)));
-			}
-			starsPos[i][0] = randomX;
-			starsPos[i][2] = randomZ;
-			starsPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
-			isStar[i][0] = i;	//giving every star a unique index
-			isStar[i][1] = 1;	//this is a flag, if it's 1, the star is rendered, if it's 0, it's not
-			processMainMenu(RESTARTMENU);
+			randomX = -297 + (rand() / (RAND_MAX / (597)));
+			randomZ = -297 + (rand() / (RAND_MAX / (597)));
 		}
-		break;
-	case HARD:
-		numberOfStars = 15 + (rand() * (int)(40 - 15) / RAND_MAX);
-		starsPos.resize(numberOfStars, vector<int>(3));
-		isStar.resize(numberOfStars, vector<int>(2));
-		for (int i = 0; i < numberOfStars; ++i)
-		{
-			randomX = -297 + (rand() / (RAND_MAX / (297 + 297)));
-			randomZ = -297 + (rand() / (RAND_MAX / (297 + 297)));
-			while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
-			{
-				randomX = -300 + (rand() / (RAND_MAX / (297 + 297)));
-				randomZ = -300 + (rand() / (RAND_MAX / (297 + 297)));
-			}
-			starsPos[i][0] = randomX;
-			starsPos[i][2] = -297 + (rand() / (RAND_MAX / (297 + 297)));
-			starsPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
-			isStar[i][0] = i;	//giving every star a unique index
-			isStar[i][1] = 1;	//this is a flag, if it's 1, the star is rendered, if it's 0, it's not
-			processMainMenu(RESTARTMENU);
-		}
-		break;
+		starsPos[i][0] = randomX;
+		starsPos[i][2] = randomZ;
+		starsPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
+		isStar[i][0] = i;	//giving every star a unique index
+		isStar[i][1] = 1;	//this is a flag, if it's 1, the star is rendered, if it's 0, it's not
+		processMainMenu(RESTARTMENU);
 	}
 }
+
+
+void processTimeLevels(int option) {
+
+	switch (option)
+	{
+	case LVL1:
+		//variables for number of stars in level
+		min_stars = 1;
+		max_stars = 8;
+	case LVL2:
+		//variables for number of stars in level
+		min_stars = 9;
+		max_stars = 16;
+	case LVL3:
+		//variables for number of stars in level
+		min_stars = 17;
+		max_stars = 25;
+	}
+	//variables for stars collecting
+	numberOfStars = min_stars + (rand() * (int)(max_stars - min_stars) / RAND_MAX);
+	starsPos.resize(numberOfStars, vector<int>(3));
+	isStar.resize(numberOfStars, vector<int>(2));
+
+	numberOfStars = 8 + (rand() * (int)(15 - 8) / RAND_MAX);
+	for (int i = 0; i < numberOfStars; ++i)
+	{
+		randomX = -297 + (rand() / (RAND_MAX / (597)));
+		randomZ = -297 + (rand() / (RAND_MAX / (597)));
+		while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
+		{
+			randomX = -297 + (rand() / (RAND_MAX / (597)));
+			randomZ = -297 + (rand() / (RAND_MAX / (597)));
+		}
+		starsPos[i][0] = randomX;
+		starsPos[i][2] = randomZ;
+		starsPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
+		isStar[i][0] = i;	//giving every star a unique index
+		isStar[i][1] = 1;	//this is a flag, if it's 1, the star is rendered, if it's 0, it's not
+		processMainMenu(RESTARTMENU);
+	}
+}
+
+
+void emptymenu(int option)
+{
+	;
+}
+
 
 void createPopupMenus()
 {
 	//mode menu options
-	modesTime = glutCreateMenu(processmodesTime);
-	glutAddMenuEntry("Easy", EASY);
-	glutAddMenuEntry("Hard", HARD);
+	easyTime = glutCreateMenu(processSpeedLevels);
+	glutAddMenuEntry("Level 1", LVL1);
+	glutAddMenuEntry("Level 2", LVL2);
+	glutAddMenuEntry("Level 3", LVL3);
 
-	modesSpeed = glutCreateMenu(processmodesSpeed);
-	glutAddMenuEntry("Easy", EASY);
-	glutAddMenuEntry("Hard", HARD);
+	hardTime = glutCreateMenu(processSpeedLevels);
+	glutAddMenuEntry("Level 1", LVL1);
+	glutAddMenuEntry("Level 2", LVL2);
+	glutAddMenuEntry("Level 3", LVL3);
+
+	easySpeed = glutCreateMenu(processTimeLevels);
+	glutAddMenuEntry("Level 1", LVL1);
+	glutAddMenuEntry("Level 2", LVL2);
+	glutAddMenuEntry("Level 3", LVL3);
+
+	hardSpeed = glutCreateMenu(processTimeLevels);
+	glutAddMenuEntry("Level 1", LVL1);
+	glutAddMenuEntry("Level 2", LVL2);
+	glutAddMenuEntry("Level 3", LVL3);
+
+	modesTime = glutCreateMenu(emptymenu);
+	glutAddSubMenu("easy - normal mode", easyTime);
+	glutAddSubMenu("hard - aggressive", hardTime);
+
+	modesSpeed = glutCreateMenu(emptymenu);
+	glutAddSubMenu("easy - normal mode", easySpeed);
+	glutAddSubMenu("hard - aggressive", hardSpeed);
+
+	modesCamera = glutCreateMenu(processmodesCamera);
+	glutAddMenuEntry("Third person camera view", THIRDPERSON);
+	glutAddMenuEntry("Distance camera view", DISTANCE);
+
+	gameModes = glutCreateMenu(emptymenu);
+	glutAddSubMenu("Beat the time records", modesSpeed);
+	glutAddSubMenu("Collecting in limited time", modesTime);
 
 	//main menu options
 	mainMenu = glutCreateMenu(processMainMenu);
 	glutAddMenuEntry("Restart the game round", RESTARTMENU);
-	glutAddSubMenu("Collecting stars on time", modesTime);
-	glutAddSubMenu("Collecting stars on time", modesSpeed);
+	glutAddSubMenu("Change game mode", gameModes);
+	glutAddSubMenu("Change camera display", modesCamera);
 
 	// attach the menu to the right button
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
@@ -267,6 +320,7 @@ void init(unsigned char* data)
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 }
 
+
 void changeSize(int w, int h) 
 {
 	// Prevent a divide by zero, when window is too short
@@ -284,6 +338,17 @@ void changeSize(int w, int h)
 	gluPerspective(90.0f, ratio, 0.1f, 1000.0f);
 	// Get Back to the Modelview
 	glMatrixMode(GL_MODELVIEW);
+}
+
+
+void print(float x, float y, float z, const char* text)
+{
+	const char* c;
+	glColor3d(0.0, 1.0, 0.0);
+	glRasterPos3f(x, y*timerY, z);
+	for (c = text; *(c + 4) != '\0'; c++) {
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+	}
 }
 
 
@@ -316,22 +381,6 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		rotation = 0.8 / tan(turning_angle / (180 / GL_PI));	//calculating the rotation of rover
 		angular_speed = -speed / rotation;	//calculating the angular_speed
 		break;
-	case '+':
-		cameraX += cos(rover_angle) * 2;
-		cameraZ += -sin(rover_angle) * 2;
-		cameraPos[0] = pos_x + cos(rover_angle) * (-15.0) + cameraX;
-		cameraPos[2] = pos_z - sin(rover_angle) * (-15.0) + cameraZ;
-		cameraPos[1] = pos_y + 22.8;
-		cout << cameraX << " " << cameraZ << endl;
-		break;
-	case '-':
-		cameraX += - cos(rover_angle) * 2;
-		cameraZ += sin(rover_angle) * 2;
-		cameraPos[0] = pos_x + cos(rover_angle) * (-15.0) + cameraX;
-		cameraPos[2] = pos_z - sin(rover_angle) * (-15.0) + cameraZ;
-		cameraPos[1] = pos_y + 22.8;
-		cout << cameraX << " " << cameraZ << endl;
-		break;
 	case 27:
 		glutDestroyMenu(mainMenu);
 		glutDestroyMenu(modesTime);
@@ -349,6 +398,14 @@ void timerCallback(int value)
 	speed = 0.95 * speed;	//decreasing the speed by 5%
 	diode_time += 1;	//iteration the diode glowing variable
 	if (diode_time > 14)	diode_time = 0;		//every 1500ms reseting it to 0
+}
+
+void timerCallback2(int value)
+{
+	glutTimerFunc(10, timerCallback2, 0);	//called every 100ms
+	timer += 0.01;
+	timerstring = to_string(timer);
+	timerChars = timerstring.c_str();
 }
 
 bool collisionDetection()
@@ -380,6 +437,7 @@ bool collisionDetection()
 	return 1;
 }
 
+
 void StarDrawing(float starX, float starY, float starZ, int index)
 {
 	if (isStar[index][1] == 1)	//if star wasn't collected
@@ -400,7 +458,7 @@ void StarDrawing(float starX, float starY, float starZ, int index)
 		{
 			for (int j = starZ - 3; j < starZ + 3; j++)
 			{
-				stars[i + 300][j + 300] = 200;	//changing Y coordinate for stars collecting table
+				stars[i + 300][j + 300] = 597;	//changing Y coordinate for stars collecting table
 			}
 		}
 	}
@@ -461,6 +519,10 @@ void renderScene(void) {
 		StarDrawing(starsPos[i][0], starsPos[i][1] + 12, starsPos[i][2], isStar[i][0]);
 	}
 
+	
+	glPushMatrix();
+	print(frontWheels[0], frontWheels[1] + 18, frontWheels[2], timerChars);
+	glPopMatrix();
 
 	//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA DAÆ TO DO SPRAWKA Z FABU£¥ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 	if (coordinates.vertices[int(frontWheels[0]) + 300][int(frontWheels[2]) + 300] < frontWheels[1] && coordinates.vertices[int(backWheels[0]) + 300][int(backWheels[2]) + 300] < backWheels[1])
@@ -585,8 +647,8 @@ int main(int argc, char** argv)
 	// init GLUT and create window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-	glutInitWindowPosition(100, 100);
-	glutInitWindowSize(1080, 860);
+	glutInitWindowPosition(0, 0);
+	glutInitWindowSize(1920, 1080);
 	glutCreateWindow("£azik Marsjañski");
 	// register callbacks
 	glutDisplayFunc(renderScene);
@@ -598,6 +660,7 @@ int main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST);
 	//Glut timer
 	glutTimerFunc(100, timerCallback, 0);
+	glutTimerFunc(100, timerCallback2, 0);
 	// init Menus
 	createPopupMenus();
 		//correcting the collisions table, so objects also have collisions
@@ -612,12 +675,12 @@ int main(int argc, char** argv)
 	
 	for (int i = 0; i < numberOfStars; ++i)
 	{
-		randomX = -100 + (rand() / (RAND_MAX / (200)));
-		randomZ = -100 + (rand() / (RAND_MAX / (200)));
+		randomX = -297 + (rand() / (RAND_MAX / (597)));
+		randomZ = -297 + (rand() / (RAND_MAX / (597)));
 		while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
 		{
-			randomX = -100 + (rand() / (RAND_MAX / (200)));
-			randomZ = -100 + (rand() / (RAND_MAX / (200)));
+			randomX = -297 + (rand() / (RAND_MAX / (597)));
+			randomZ = -297 + (rand() / (RAND_MAX / (597)));
 		}
 		starsPos[i][0] = randomX;
 		starsPos[i][2] = randomZ;
