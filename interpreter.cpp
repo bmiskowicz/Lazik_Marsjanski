@@ -99,7 +99,7 @@ void Interpreter::Draw()
 	glEnd();
 }
 
-void Interpreter::DrawStar(float posX, float posY, float posZ)
+void Interpreter::DrawObj(float posX, float posY, float posZ)
 {
 	glBegin(GL_TRIANGLES);//Start drawing
 	for (int i = 0; i < f.size(); i++)

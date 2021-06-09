@@ -21,7 +21,7 @@ public:
 	Interpreter(string filename);//Read function
 	void DrawT();//Drawing function for objects with textures
 	void Draw();//Drawing function
-	void DrawStar(float posX, float posY, float posZ);//Star drawing function
+	void DrawObj(float posX, float posY, float posZ);//Star drawing function
 private:
 	vector<vector<GLfloat>> v;//Store vertex (x,y,z) coordinates
 	vector<vector<GLint>> f;//Store the three vertex indexes of the face
