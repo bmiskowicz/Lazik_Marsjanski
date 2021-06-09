@@ -44,8 +44,8 @@ Interpreter star = Interpreter("gwiazda.obj");
 float stars[600][600];	//stars collecting table
 
 //variables for number of stars in level
-int min_stars = 1;
-int max_stars = 8;
+int min_stars = 3;
+int max_stars = 9;
 
 //variables for stars collecting
 int numberOfStars = min_stars + (rand() * (int)(max_stars - min_stars) / RAND_MAX);
@@ -95,12 +95,19 @@ bool canMove = 1;
 //variable giving different timer height for each camera mode
 float timerY = 1.5;
 
-//timer variables for writing it out
+//timer variables 
 float timer = 0.0;
+
+float old_timer = 0.0;
 string timerstring = to_string(timer);
 const char* timerChars = timerstring.c_str();
 
+bool timerFlag = 0;
+bool timerMode = 1;
+int max_time = 0;
 
+//pause
+bool pause = 0;
 
 void processMenuStatus(int status, int x, int y)
 {
@@ -139,6 +146,8 @@ void processMainMenu(int option)
 		frontMiddle[2] = 10.0;
 		canMove = 1;
 
+		timer = old_timer;
+
 		for (int i = 0; i < numberOfStars; i++)
 		{
 			isStar[i][1] = 1;	//creating stars back
@@ -148,43 +157,51 @@ void processMainMenu(int option)
 }
 
 
-void processmodesCamera(int option) {
-
-	switch (option)
+void processmodesCamera(int option)
+{
+	if (abs(timer - max_time) > 0.01)
 	{
-	case THIRDPERSON:
-		timerY = 1.5;
-		cameraX = 0.0;
-		cameraZ = 0.0;
-		break;
-	case DISTANCE:
-		timerY = 2.0;
-		cameraX = 60.0;
-		cameraZ = -0.5;
-		break;
+		switch (option)
+		{
+		case THIRDPERSON:
+			timerY = 1.5;
+			cameraX = 0.0;
+			cameraZ = 0.0;
+			break;
+		case DISTANCE:
+			timerY = 2.0;
+			cameraX = 60.0;
+			cameraZ = -0.5;
+			break;
+		}
 	}
 }
 
 
-void processSpeedLevels(int option) {
-
+void processSpeedLevels(int option)
+{
 	switch (option)
 	{
 	case LVL1:
-		//variables for number of stars in level
-		numberOfStars = 5;
+		//variables for levels
+		numberOfStars = 30;
+		timer = 60;
+		old_timer = timer;
+		break;
 	case LVL2:
-		//variables for number of stars in level
-		numberOfStars = 15;
-	case LVL3:
-		//variables for number of stars in level
 		numberOfStars = 25;
+		timer = 30;
+		old_timer = timer;
+		break;
+	case LVL3:
+		numberOfStars = 20;
+		timer = 15;
+		old_timer = timer;
+		break;
 	}
 	//variables for stars collecting
 	starsPos.resize(numberOfStars, vector<int>(3));
 	isStar.resize(numberOfStars, vector<int>(2));
-
-	numberOfStars = 8 + (rand() * (int)(15 - 8) / RAND_MAX);
 	for (int i = 0; i < numberOfStars; ++i)
 	{
 		randomX = -297 + (rand() / (RAND_MAX / (597)));
@@ -201,32 +218,35 @@ void processSpeedLevels(int option) {
 		isStar[i][1] = 1;	//this is a flag, if it's 1, the star is rendered, if it's 0, it's not
 		processMainMenu(RESTARTMENU);
 	}
+	timerMode = 0;
+	max_time = 0;
 }
 
 
-void processTimeLevels(int option) {
-
+void processTimeLevels(int option)
+{
 	switch (option)
 	{
 	case LVL1:
 		//variables for number of stars in level
-		min_stars = 1;
-		max_stars = 8;
+		numberOfStars = 16;
+		max_time = 90;
+		break;
 	case LVL2:
 		//variables for number of stars in level
-		min_stars = 9;
-		max_stars = 16;
+		numberOfStars = 32;
+		max_time = 60;
+		break;
 	case LVL3:
 		//variables for number of stars in level
-		min_stars = 17;
-		max_stars = 25;
+		numberOfStars = 50;
+		max_time = 35;
+		break;
 	}
 	//variables for stars collecting
-	numberOfStars = min_stars + (rand() * (int)(max_stars - min_stars) / RAND_MAX);
+	//numberOfStars = min_stars + (rand() * (int)(max_stars - min_stars) / RAND_MAX);
 	starsPos.resize(numberOfStars, vector<int>(3));
 	isStar.resize(numberOfStars, vector<int>(2));
-
-	numberOfStars = 8 + (rand() * (int)(15 - 8) / RAND_MAX);
 	for (int i = 0; i < numberOfStars; ++i)
 	{
 		randomX = -297 + (rand() / (RAND_MAX / (597)));
@@ -243,6 +263,9 @@ void processTimeLevels(int option) {
 		isStar[i][1] = 1;	//this is a flag, if it's 1, the star is rendered, if it's 0, it's not
 		processMainMenu(RESTARTMENU);
 	}
+	timerMode = 1;
+	timer = 0;
+	old_timer = 0;
 }
 
 
@@ -356,30 +379,49 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 {
 	switch (key) {
 	case 'w':
-		if (speed < 1.5)	speed += 0.06;	// increasing speed till limit when moving forward, or decreasing speed when moving backwards
-		if (turning_angle == 0)	//when turning angle is 0
+		if (pause == 0 && abs(timer - max_time) > 0.01)
 		{
-			rotation = 0;	//rover is not rotating
-			angular_speed = 0;	//and agular speed is none
+			if (speed < 1.5)	speed += 0.04;	// increasing speed till limit when moving forward, or decreasing speed when moving backwards
+			if (turning_angle == 0)	//when turning angle is 0
+			{
+				rotation = 0;	//rover is not rotating
+				angular_speed = 0;	//and agular speed is none
+			}
 		}
 		break;
 	case 's':
-		if (speed > -1.0)	speed -= 0.06;	//decreasing speed till limit when moveing forward, or increasing speed when moving backwards
-		if (turning_angle == 0)	//when turning angle is 0
+		if (pause == 0 && abs(timer - max_time) > 0.01)
 		{
-			rotation = 0;	//rover is not rotating
-			angular_speed = 0;	//and agular speed is none
+			if (speed > -1.0)	speed -= 0.04;	//decreasing speed till limit when moveing forward, or increasing speed when moving backwards
+			if (turning_angle == 0)	//when turning angle is 0
+			{
+				rotation = 0;	//rover is not rotating
+				angular_speed = 0;	//and agular speed is none
+			}
 		}
 		break;
 	case 'd':
-		turning_angle += 4;	//increasing turning angle by 8 degrees
-		rotation = 0.8 / tan(turning_angle / (180 / GL_PI));	//calculating the rotation of rover
-		angular_speed = -speed / rotation;	//calculating the angular_speed
+		if (pause == 0 && abs(timer - max_time) > 0.01)
+		{
+			turning_angle += 4;	//increasing turning angle by 8 degrees
+			rotation = 0.8 / tan(turning_angle / (180 / GL_PI));	//calculating the rotation of rover
+			angular_speed = -speed / rotation;	//calculating the angular_speed
+		}
 		break;
 	case 'a':
-		turning_angle -= 4;	//decreasing turning angle by 8 degrees
-		rotation = 0.8 / tan(turning_angle / (180 / GL_PI));	//calculating the rotation of rover
-		angular_speed = -speed / rotation;	//calculating the angular_speed
+		if (pause == 0 && abs(timer - max_time) > 0.01)
+		{
+			turning_angle -= 4;	//decreasing turning angle by 8 degrees
+			rotation = 0.8 / tan(turning_angle / (180 / GL_PI));	//calculating the rotation of rover
+			angular_speed = -speed / rotation;	//calculating the angular_speed
+		}
+		break;
+	case 'p':
+		if (abs(timer - max_time) > 0.01)
+		{
+		if (pause == 1)	pause = 0;
+		else pause = 1;
+		}
 		break;
 	case 27:
 		glutDestroyMenu(mainMenu);
@@ -403,9 +445,14 @@ void timerCallback(int value)
 void timerCallback2(int value)
 {
 	glutTimerFunc(10, timerCallback2, 0);	//called every 100ms
-	timer += 0.01;
-	timerstring = to_string(timer);
-	timerChars = timerstring.c_str();
+
+	if (abs(timer - max_time) > 0.01 && pause == 0)
+	{
+		if (timerMode == 1)		timer += 0.01;
+		else timer -= 0.01;
+		timerstring = to_string(timer);
+		timerChars = timerstring.c_str();
+	}
 }
 
 bool collisionDetection()
@@ -479,7 +526,8 @@ void starsCollecting()
 }
 
 
-void renderScene(void) {
+void renderScene(void)
+{
 	// Clear Color and Depth Buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);
@@ -520,10 +568,6 @@ void renderScene(void) {
 	}
 
 	
-	glPushMatrix();
-	print(frontWheels[0], frontWheels[1] + 18, frontWheels[2], timerChars);
-	glPopMatrix();
-
 	//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA DAÆ TO DO SPRAWKA Z FABU£¥ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 	if (coordinates.vertices[int(frontWheels[0]) + 300][int(frontWheels[2]) + 300] < frontWheels[1] && coordinates.vertices[int(backWheels[0]) + 300][int(backWheels[2]) + 300] < backWheels[1])
 	{
@@ -536,77 +580,109 @@ void renderScene(void) {
 	}
 
 
-	if (canMove == 1)	//if there's no collision detected
+	if (pause == 1)
 	{
-		pos_x += cos(rover_angle) * speed;	//calculating the new X coordinate
-		pos_z += -sin(rover_angle) * speed;	//calculating the new Z coordinate
+		glPushMatrix();
+		print(frontWheels[0], frontWheels[1] + 18, frontWheels[2], timerChars);
+		glPopMatrix();
 
-		glPushMatrix();	//stacinkg the object
-		glTranslatef(pos_x, 0, pos_z);	//moving the rotation center to rover
-		glRotatef(rover_angle * (180 / GL_PI), 0, 1, 0);	//rotating the rover
-		glTranslatef(-pos_x, 0, -pos_z);	//moving it back
-		glTranslatef(pos_x, pos_y, pos_z);	//moving the rover
-		Lazik Marsjanski = Lazik();	//rendering the rover
-		//reseting the rotating variables, so rover moves only forward and backwards, when A and D are not clicked
-		turning_angle = 0;
-		rotation = 0;
-		angular_speed = 0;
-
-		glPushMatrix();	//stacinkg the object
-		glTranslatef(9.0, 0, -2.0);	//moving the rotation center to wheel
-		glRotatef(antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the antenne
-		glTranslatef(-9.0, 0, 2.0);	//moving it back
-		Marsjanski.antenna1();	//rendering the first antenne
-		glPopMatrix();	//unstacinkg the object
-
-		glPushMatrix();	//stacinkg the object
-		glTranslatef(9.0, 0, 2.0);	//moving the rotation center to wheel
-		glRotatef(-antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the antenne
-		glTranslatef(-9.0, 0, -2.0);	//moving it back
-		Marsjanski.antenna2();	//rendering the second antenne
-		glPopMatrix();	//unstacinkg the object
-
-		if (diode_time == 0)	Marsjanski.diode(0.9);	//diode red glowing when the variable is equal 0
-		else	Marsjanski.diode(0.6);	//and showing it darker, if not
-
-		glPopMatrix();	//unstacinkg the object
-	}
-	else	//if there is collision
-	{
-		pos_x -=  2 * cos(rover_angle) * speed;	//calculating the new X coordinate
-		pos_z -=  2 * -sin(rover_angle) * speed;	//calculating the new Z coordinate
-
-		speed = 0;
-
-		glPushMatrix();	//stacinkg the object
-		glTranslatef(pos_x, 0, pos_z);	//moving the rotation center to rover
-		glRotatef(rover_angle * (180 / GL_PI), 0, 1, 0);	//rotating the rover
-		glTranslatef(-pos_x, 0, -pos_z);	//moving it back
+		glPushMatrix();
 		glTranslatef(pos_x, 0, pos_z);	//moving the rover
 		Lazik Marsjanski = Lazik();	//rendering the rover
-		//reseting the rotating variables, so rover moves only forward and backwards, when A and D are not clicked
-		turning_angle = 0;
-		rotation = 0;
-		angular_speed = 0;
-
-		glPushMatrix();	//stacinkg the object
-		glTranslatef(9.0, 0, -2.0);	//moving the rotation center to wheel
-		glRotatef(antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the antenne
-		glTranslatef(-9.0, 0, 2.0);	//moving it back
 		Marsjanski.antenna1();	//rendering the first antenne
-		glPopMatrix();	//unstacinkg the object
-
-		glPushMatrix();	//stacinkg the object
-		glTranslatef(9.0, 0, 2.0);	//moving the rotation center to wheel
-		glRotatef(-antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the antenne
-		glTranslatef(-9.0, 0, -2.0);	//moving it back
 		Marsjanski.antenna2();	//rendering the second antenne
+		Marsjanski.diode(0.6);	//and showing it darker, if not
 		glPopMatrix();	//unstacinkg the object
+	}
+	else
+	{
+		if (abs(timer - max_time) < 0.01)
+		{
+			glPushMatrix();
+			print(frontWheels[0], frontWheels[1] + 18, frontWheels[2], "Tu beda wyniki    ");
+			glPopMatrix();
+		}
+		else
+		{
 
-		if (diode_time == 0)	Marsjanski.diode(0.9);	//diode red glowing when the variable is equal 0
-		else	Marsjanski.diode(0.6);	//and showing it darker, if not
+			glPushMatrix();
+			print(frontWheels[0], frontWheels[1] + 18, frontWheels[2], timerChars);
+			glPopMatrix();
 
-		glPopMatrix();	//unstacinkg the object
+
+			if (canMove == 1)	//if there's no collision detected
+			{
+				pos_x += cos(rover_angle) * speed;	//calculating the new X coordinate
+				pos_z += -sin(rover_angle) * speed;	//calculating the new Z coordinate
+
+				glPushMatrix();	//stacinkg the object
+				glTranslatef(pos_x, 0, pos_z);	//moving the rotation center to rover
+				glRotatef(rover_angle * (180 / GL_PI), 0, 1, 0);	//rotating the rover
+				glTranslatef(-pos_x, 0, -pos_z);	//moving it back
+				glTranslatef(pos_x, pos_y, pos_z);	//moving the rover
+				Lazik Marsjanski = Lazik();	//rendering the rover
+				//reseting the rotating variables, so rover moves only forward and backwards, when A and D are not clicked
+				turning_angle = 0;
+				rotation = 0;
+				angular_speed = 0;
+
+				glPushMatrix();	//stacinkg the object
+				glTranslatef(9.0, 0, -2.0);	//moving the rotation center to wheel
+				glRotatef(antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the antenne
+				glTranslatef(-9.0, 0, 2.0);	//moving it back
+				Marsjanski.antenna1();	//rendering the first antenne
+				glPopMatrix();	//unstacinkg the object
+
+				glPushMatrix();	//stacinkg the object
+				glTranslatef(9.0, 0, 2.0);	//moving the rotation center to wheel
+				glRotatef(-antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the antenne
+				glTranslatef(-9.0, 0, -2.0);	//moving it back
+				Marsjanski.antenna2();	//rendering the second antenne
+				glPopMatrix();	//unstacinkg the object
+
+				if (diode_time == 0)	Marsjanski.diode(0.9);	//diode red glowing when the variable is equal 0
+				else	Marsjanski.diode(0.6);	//and showing it darker, if not
+
+				glPopMatrix();	//unstacinkg the object
+			}
+			else	//if there is collision
+			{
+				pos_x -= 2 * cos(rover_angle) * speed;	//calculating the new X coordinate
+				pos_z -= 2 * -sin(rover_angle) * speed;	//calculating the new Z coordinate
+
+				speed = 0;
+
+				glPushMatrix();	//stacinkg the object
+				glTranslatef(pos_x, 0, pos_z);	//moving the rotation center to rover
+				glRotatef(rover_angle * (180 / GL_PI), 0, 1, 0);	//rotating the rover
+				glTranslatef(-pos_x, 0, -pos_z);	//moving it back
+				glTranslatef(pos_x, 0, pos_z);	//moving the rover
+				Lazik Marsjanski = Lazik();	//rendering the rover
+				//reseting the rotating variables, so rover moves only forward and backwards, when A and D are not clicked
+				turning_angle = 0;
+				rotation = 0;
+				angular_speed = 0;
+
+				glPushMatrix();	//stacinkg the object
+				glTranslatef(9.0, 0, -2.0);	//moving the rotation center to wheel
+				glRotatef(antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the antenne
+				glTranslatef(-9.0, 0, 2.0);	//moving it back
+				Marsjanski.antenna1();	//rendering the first antenne
+				glPopMatrix();	//unstacinkg the object
+
+				glPushMatrix();	//stacinkg the object
+				glTranslatef(9.0, 0, 2.0);	//moving the rotation center to wheel
+				glRotatef(-antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the antenne
+				glTranslatef(-9.0, 0, -2.0);	//moving it back
+				Marsjanski.antenna2();	//rendering the second antenne
+				glPopMatrix();	//unstacinkg the object
+
+				if (diode_time == 0)	Marsjanski.diode(0.9);	//diode red glowing when the variable is equal 0
+				else	Marsjanski.diode(0.6);	//and showing it darker, if not
+
+				glPopMatrix();	//unstacinkg the object
+			}
+		}
 	}
 	
 	//showing ground vertices

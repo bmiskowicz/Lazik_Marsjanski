@@ -12,7 +12,7 @@ using namespace std;
 class Vertices
 {
 public:
-	float vertices[600][600];	//table for all calculated points
+	float vertices[601][601];	//table for all calculated points
 	float minmax[3][2];	//table for triangle vertices positions
 	float middleZ;	//value of Z coordinate of point which is on X posisition of middle vertex and it's Z position is on straight line which is passing through first and last vertex
 	float Zmin;	//maximum Z value of 3 vertices of triangle
