@@ -129,3 +129,38 @@ void Interpreter::DrawObj(float posX, float posY, float posZ)
 	}
 	glEnd();
 }
+
+
+void Interpreter::DrawG()
+{
+	glBegin(GL_TRIANGLES);//Start drawing
+	for (int i = 0; i < f.size(); i++)
+	{
+		//Three vertices
+		vertex a, b, c;
+		GLint firstVertexIndex = (f[i])[0];//Remove the vertex index
+		GLint secondVertexIndex = (f[i])[1];
+		GLint thirdVertexIndex = (f[i])[2];
+
+		a.x = (v[firstVertexIndex])[0];//The first vertex
+		a.y = (v[firstVertexIndex])[1];
+		a.z = (v[firstVertexIndex])[2];
+
+		b.x = (v[secondVertexIndex])[0]; //The second vertex
+		b.y = (v[secondVertexIndex])[1];
+		b.z = (v[secondVertexIndex])[2];
+
+		c.x = (v[thirdVertexIndex])[0]; //The third vertex
+		c.y = (v[thirdVertexIndex])[1];
+		c.z = (v[thirdVertexIndex])[2];
+
+		glColor3f(0.85, 0.78, 0.78);
+		glVertex3f(a.x, a.y, a.z);//Draw triangle
+		glColor3f(0.57, 0.45, 0.45);
+		glVertex3f(b.x, b.y, b.z);
+		glColor3f(0.95, 0.87, 0.87);
+		glVertex3f(c.x, c.y, c.z);
+
+	}
+	glEnd();
+}

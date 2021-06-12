@@ -14,6 +14,8 @@
 
 // Constant definitions for Menus
 #define RESTARTMENU 1
+#define MAINMENU 2
+#define TEXTURING 3
 
 #define THIRDPERSON 1
 #define DISTANCE 2
@@ -49,6 +51,7 @@ Interpreter icosphere = Interpreter("Icosphere.obj");
 
 //collisions map
 Vertices coordinates = Vertices("tekstury.obj");
+bool texturesFlag = 1;
 
 //object for collecting points
 Interpreter star = Interpreter("gwiazda.obj");
@@ -66,6 +69,7 @@ int max_stars = 9;
 int numberOfStars = min_stars + (rand() * (int)(max_stars - min_stars) / RAND_MAX);
 vector<vector<int> > starsPos(numberOfStars, vector<int>(3));	//positions X, Y, Z
 vector<vector<int> > isStar(numberOfStars, vector<int>(2));	//index and variable responsible for dissapearing
+int starsCollected = 1;
 
 int numberOfUfos = 0;
 //variables for ufos attacks
@@ -122,13 +126,11 @@ const char* timerChars = timerstring.c_str();
 
 bool timerFlag = 0;
 bool timerMode = 1;
-int max_time = 0;
+int min_time = 0;
 
-//pause
+//pause and end-round flag
 bool pause = 0;
-
-//game modes
-int gameMode = 0;
+bool endRound = 1;
 
 //random 0/1 variable for ufos directions, ufo time for moving slower
 int random = 0;
@@ -138,6 +140,58 @@ int ufoTime = 0;
 float hp = 3;
 const char* hpText = "HP: 3";
 string ufostring;
+
+
+//text for stars collecting
+const char* starsC = "0";
+string starsS;
+
+//level
+int level = 0;
+
+//results table and it's writing out variables
+float results[13][4];
+bool sortOnce = 0;
+const char* resultsC = "0";
+string resultsS;
+
+
+
+
+void sortResults()
+{
+	if (level > 6)
+	{
+		if (results[level][0] < results[level][1])
+			swap(results[level][0], results[level][1]);
+		if (results[level][0] < results[level][2])
+			swap(results[level][0], results[level][2]);
+		if (results[level][0] < results[level][3])
+			swap(results[level][0], results[level][3]);
+		if (results[level][1] < results[level][2])
+			swap(results[level][1], results[level][2]);
+		if (results[level][1] < results[level][3])
+			swap(results[level][1], results[level][3]);
+		if (results[level][2] < results[level][3])
+			swap(results[level][2], results[level][3]);
+	}
+	else if (level > 0 && level < 7)
+{
+		if (results[level][0] > results[level][1])
+			swap(results[level][0], results[level][1]);
+		if (results[level][0] > results[level][2])
+			swap(results[level][0], results[level][2]);
+		if (results[level][0] > results[level][3])
+			swap(results[level][0], results[level][3]);
+		if (results[level][1] > results[level][2])
+			swap(results[level][1], results[level][2]);
+		if (results[level][1] > results[level][3])
+			swap(results[level][1], results[level][3]);
+		if (results[level][2] > results[level][3])
+			swap(results[level][2], results[level][3]);
+	}
+	sortOnce = 1;
+}
 
 
 
@@ -175,12 +229,23 @@ void processMainMenu(int option)
 
 		canMove = 1;
 
-		timer = old_timer;
+		sortOnce = 0;
+		endRound = 0;
+		old_timer = timer;
+
+		starsCollected = 0;
 
 		for (int i = 0; i < numberOfStars; i++)
 		{
 			isStar[i][1] = 1;	//creating stars back
 		}
+		break;
+	case MAINMENU:
+		endRound = 1;
+		break;
+	case TEXTURING:
+		if (texturesFlag == 1)	texturesFlag = 0;
+		else texturesFlag = 1;
 		break;
 	}
 }
@@ -188,7 +253,7 @@ void processMainMenu(int option)
 
 void processmodesCamera(int option)
 {
-	if (abs(timer - max_time) > 0.01)
+	if (endRound == 0)
 	{
 		switch (option)
 		{
@@ -213,47 +278,55 @@ void processSpeedLevels(int option)
 	{
 	case LVL1:
 		//variables for levels
-		numberOfStars = 30;
-		timer = 60;
+		numberOfStars = 5;
+		timer = 90;
 		numberOfUfos = 0;
+		level = 1;
 		break;
 	case LVL2:
-		numberOfStars = 25;
-		timer = 30;
+		numberOfStars = 10;
+		timer = 80;
 		numberOfUfos = 0;
+		level = 2;
 		break;
 	case LVL3:
-		numberOfStars = 20;
-		timer = 15;
+		numberOfStars = 15;
+		timer = 75;
 		numberOfUfos = 0;
+		level = 3;
 		break;
 	case LVL4:
 		//variables for levels
-		numberOfStars = 30;
-		timer = 60;
+		numberOfStars = 5;
+		timer = 90;
 		numberOfUfos = 1;
 		hp = 3;
+		level = 4;
 		break;
 	case LVL5:
-		numberOfStars = 25;
-		timer = 30;
+		numberOfStars = 10;
+		timer = 80;
 		numberOfUfos = 3;
 		hp = 3;
+		level = 5;
 		break;
 	case LVL6:
-		numberOfStars = 20;
-		timer = 15;
+		numberOfStars = 15;
+		timer = 75;
 		numberOfUfos = 6;
 		hp = 3;
+		level = 6;
 		break;
 	}
+	sortOnce = 0;
+	endRound = 0;
 	old_timer = timer;
 	ufoPos.resize(numberOfUfos, vector<int>(3));
 	ufoAttacks.resize(numberOfUfos, vector<int>(2));
 	for (int i = 0; i < numberOfUfos; ++i)
 	{
-		randomX = -285 + (rand() / (RAND_MAX / (585)));
-		randomZ = -285 + (rand() / (RAND_MAX / (585)));
+		randomX = ((250 + 250) * ((float)rand() / RAND_MAX)) -250;
+		randomZ = ((250 + 250) * ((float)rand() / RAND_MAX)) -250;
 		ufoPos[i][0] = randomX;
 		ufoPos[i][2] = randomZ;
 		ufoPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
@@ -268,12 +341,12 @@ void processSpeedLevels(int option)
 	isStar.resize(numberOfStars, vector<int>(2));
 	for (int i = 0; i < numberOfStars; ++i)
 	{
-		randomX = -285 + (rand() / (RAND_MAX / (585)));
-		randomZ = -285 + (rand() / (RAND_MAX / (585)));
+		randomX = ((250 + 250) * ((float)rand() / RAND_MAX)) -250;
+		randomZ = ((250 + 250) * ((float)rand() / RAND_MAX)) -250;
 		while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
 		{
-			randomX = -285 + (rand() / (RAND_MAX / (585)));
-			randomZ = -285 + (rand() / (RAND_MAX / (585)));
+			randomX = ((250 + 250) * ((float)rand() / RAND_MAX)) -250;
+			randomZ = ((250 + 250) * ((float)rand() / RAND_MAX)) -250;
 		}
 		starsPos[i][0] = randomX;
 		starsPos[i][2] = randomZ;
@@ -282,7 +355,7 @@ void processSpeedLevels(int option)
 		isStar[i][1] = 1;	//this is a flag, if it's 1, the star is rendered, if it's 0, it's not
 	}
 	timerMode = 0;
-	max_time = 0;
+	min_time = 0;
 	processMainMenu(RESTARTMENU);
 }
 
@@ -293,50 +366,53 @@ void processTimeLevels(int option)
 	{
 	case LVL7:
 		//variables for number of stars in level
-		numberOfStars = 16;
-		max_time = 90;
+		numberOfStars = 5;
 		numberOfUfos = 0;
+		level = 7;
 		break;
 	case LVL8:
 		//variables for number of stars in level
-		numberOfStars = 32;
-		max_time = 60;
+		numberOfStars = 10;
 		numberOfUfos = 0;
+		level = 8;
 		break;
 	case LVL9:
 		//variables for number of stars in level
-		numberOfStars = 50;
-		max_time = 35;
-		numberOfUfos = 0;		
+		numberOfStars = 15;
+		numberOfUfos = 0;
+		level = 9;
 		break;
 	case LVL10:
 		//variables for number of stars in level
-		numberOfStars = 16;
-		max_time = 90;
+		numberOfStars = 5;
 		numberOfUfos = 1;
 		hp = 3;
+		level = 10;
 		break;
 	case LVL11:
 		//variables for number of stars in level
-		numberOfStars = 32;
-		max_time = 60;
+		numberOfStars = 10;
 		numberOfUfos = 3;
 		hp = 3;
+		level = 11;
 		break;
 	case LVL12:
 		//variables for number of stars in level
-		numberOfStars = 50;
-		max_time = 35;
+		numberOfStars = 15;
 		numberOfUfos = 6;
 		hp = 3;
+		level = 12;
 		break;
 	}
+	sortOnce = 0;
+	endRound = 0;
+	min_time = -1;
 	ufoPos.resize(numberOfUfos, vector<int>(3));
 	ufoAttacks.resize(numberOfUfos, vector<int>(2));
 	for (int i = 0; i < numberOfUfos; ++i)
 	{
-		randomX = -285 + (rand() / (RAND_MAX / (585)));
-		randomZ = -285 + (rand() / (RAND_MAX / (585)));
+		randomX = ((250 + 250) * ((float)rand() / RAND_MAX)) -250;
+		randomZ = ((250 + 250) * ((float)rand() / RAND_MAX)) -250;
 		ufoPos[i][0] = randomX;
 		ufoPos[i][2] = randomZ;
 		ufoPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
@@ -352,12 +428,12 @@ void processTimeLevels(int option)
 	isStar.resize(numberOfStars, vector<int>(2));
 	for (int i = 0; i < numberOfStars; ++i)
 	{
-		randomX = -285 + (rand() / (RAND_MAX / (585)));
-		randomZ = -285 + (rand() / (RAND_MAX / (585)));
+		randomX = ((250 + 250) * ((float)rand() / RAND_MAX)) -250;
+		randomZ = ((250 + 250) * ((float)rand() / RAND_MAX)) -250;
 		while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
 		{
-			randomX = -285 + (rand() / (RAND_MAX / (585)));
-			randomZ = -285 + (rand() / (RAND_MAX / (585)));
+			randomX = ((250 + 250) * ((float)rand() / RAND_MAX)) -250;
+			randomZ = ((250 + 250) * ((float)rand() / RAND_MAX)) -250;
 		}
 		starsPos[i][0] = randomX;
 		starsPos[i][2] = randomZ;
@@ -419,9 +495,11 @@ void createPopupMenus()
 
 	//main menu options
 	mainMenu = glutCreateMenu(processMainMenu);
+	glutAddMenuEntry("Go to main menu", MAINMENU);
 	glutAddMenuEntry("Restart the game round", RESTARTMENU);
 	glutAddSubMenu("Change game mode", gameModes);
 	glutAddSubMenu("Change camera display", modesCamera);
+	glutAddMenuEntry("Disable/enable texturing", TEXTURING);
 
 	// attach the menu to the right button
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
@@ -476,8 +554,25 @@ void print(float x, float y, float z, const char* text)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
 	}
-	glRasterPos3f(x, y - 3, z);
+	glRasterPos3f(x, y - 2, z);
+	for (c = starsC; *(c) != '\0'; c++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
+	}
+	glRasterPos3f(x, y - 4, z);
 	for (c = hpText; *(c + 7) != '\0'; c++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
+	}
+}
+
+
+void printT(float x, float y, float z, const char* text)
+{
+	const char* c;
+	glColor3d(1.0, 1.0, 1.0);
+	glRasterPos3f(x, y, z);
+	for (c = text; *(c + 4) != '\0'; c++)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
 	}
@@ -488,7 +583,7 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 {
 	switch (key) {
 	case 'w':
-		if (pause == 0 && abs(timer - max_time) > 0.01)
+		if (pause == 0 && endRound == 0)
 		{
 			if (speed < 1.0)	speed += 0.02;	// increasing speed till limit when moving forward, or decreasing speed when moving backwards
 			if (turning_angle == 0)	//when turning angle is 0
@@ -499,7 +594,7 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		}
 		break;
 	case 's':
-		if (pause == 0 && abs(timer - max_time) > 0.01)
+		if (pause == 0 && endRound == 0)
 		{
 			if (speed > -0.75)	speed -= 0.02;	//decreasing speed till limit when moveing forward, or increasing speed when moving backwards
 			if (turning_angle == 0)	//when turning angle is 0
@@ -510,7 +605,7 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		}
 		break;
 	case 'd':
-		if (pause == 0 && abs(timer - max_time) > 0.01)
+		if (pause == 0 && endRound == 0)
 		{
 			turning_angle += 4;	//increasing turning angle by 8 degrees
 			rotation = 0.8 / tan(turning_angle / (180 / GL_PI));	//calculating the rotation of rover
@@ -518,7 +613,7 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		}
 		break;
 	case 'a':
-		if (pause == 0 && abs(timer - max_time) > 0.01)
+		if (pause == 0 && endRound == 0)
 		{
 			turning_angle -= 4;	//decreasing turning angle by 8 degrees
 			rotation = 0.8 / tan(turning_angle / (180 / GL_PI));	//calculating the rotation of rover
@@ -526,7 +621,7 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		}
 		break;
 	case 'p':
-		if (abs(timer - max_time) > 0.01)
+		if (endRound == 0)
 		{
 			if (pause == 1)	pause = 0;
 			else pause = 1;
@@ -550,7 +645,10 @@ void timerCallback(int value)
 	diode_time += 1;	//iteration the diode glowing variable
 	if (diode_time > 14)	diode_time = 0;		//every 1500ms reseting it to 0
 	ufoTime += 1;
-	if (ufoTime == 10 || ufoTime == 30)		ufoTime = 0;
+	if (ufoTime == 5 || ufoTime == 25)		ufoTime = 0;
+	if (timerMode == 1)		starsS = "Collected: " + to_string(starsCollected) + "/" + to_string(numberOfStars);
+	else 		starsS = "Collected: " + to_string(starsCollected);
+	starsC = starsS.c_str();
 }
 
 
@@ -558,12 +656,13 @@ void timerCallback2(int value)
 {
 	glutTimerFunc(10, timerCallback2, 0);	//called every 100ms
 
-	if (abs(timer - max_time) > 0.01 && pause == 0)
+	if (endRound == 0 && pause == 0)
 	{
 		if (timerMode == 1)		timer += 0.01;
 		else timer -= 0.01;
 		timerstring = to_string(timer);
 		timerChars = timerstring.c_str();
+		if (abs(timer - min_time) < 0.01) endRound = 1;
 	}
 }
 
@@ -604,18 +703,23 @@ bool collisionDetection()
 	if (backWheels[0] < -285)
 	{
 		backWheels[0] = -285;
+		pos_x = -285;
 	}
-	else if (backWheels[0] > 285)
+	else if(backWheels[0] > 285)
 	{
 		backWheels[0] = 285;
+		pos_x = 285;
 	}
-	else if (backWheels[2] < -285)
+
+	if (backWheels[2] < -285)
 	{
 		backWheels[2] = -285;
+		pos_z = -285;
 	}
 	else if (backWheels[2] > 285)
 	{
 		backWheels[2] = 285;
+		pos_z = 285;
 	}
 
 	//checking if there is collision
@@ -646,15 +750,40 @@ bool collisionDetection()
 
 void starsCollecting()
 {
-	if (stars[int(frontWheels[0]) + 300][int(frontWheels[2]) + 300] >= frontWheels[1])	//if front of rover meets star
-	for (int i = 0; i < numberOfStars; i++)
+	if (timerMode == 0 && starsCollected == numberOfStars)
 	{
-		if (abs(frontWheels[0] - starsPos[i][0]) < 3 && abs(frontWheels[2] - starsPos[i][2]) < 3)	isStar[i][1] = 0;	//star dissapears
+		starsPos.resize(numberOfStars+1, vector<int>(3));
+		isStar.resize(numberOfStars+1, vector<int>(2));
+		numberOfStars += 1;
+		randomX = ((250 + 250) * ((float)rand() / RAND_MAX)) - 250;
+		randomZ = ((250 + 250) * ((float)rand() / RAND_MAX)) - 250;
+		starsPos[numberOfStars - 1][0] = randomX;
+		starsPos[numberOfStars - 1][2] = randomZ;
+		starsPos[numberOfStars - 1][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
+		isStar[numberOfStars -1][0] = numberOfStars - 1;
+		isStar[numberOfStars -1][1] = 1;
 	}
-	if (stars[int(backWheels[0]) + 300][int(backWheels[2]) + 300] >= backWheels[1])	//if back of rover meets star
-	for (int i = 0; i < numberOfStars; i++)
+	else if (timerMode == 1 && starsCollected == numberOfStars)	endRound = 1;
+	else
 	{
-		if (abs(backWheels[0] - starsPos[i][0]) < 3 && abs(backWheels[2] - starsPos[i][2]) < 3)	isStar[i][1] = 0;	//star dissapears
+		if (stars[int(frontWheels[0]) + 300][int(frontWheels[2]) + 300] >= frontWheels[1])	//if front of rover meets star
+			for (int i = 0; i < numberOfStars; i++)
+			{
+				if (abs(frontWheels[0] - starsPos[i][0]) < 5 && abs(frontWheels[2] - starsPos[i][2]) < 5 && isStar[i][1] == 1)
+				{
+					isStar[i][1] = 0;	//star dissapears
+					starsCollected += 1;
+				}
+			}
+		if (stars[int(backWheels[0]) + 300][int(backWheels[2]) + 300] >= backWheels[1])	//if back of rover meets star
+			for (int i = 0; i < numberOfStars; i++)
+			{
+				if (abs(backWheels[0] - starsPos[i][0]) < 5 && abs(backWheels[2] - starsPos[i][2]) < 5 && isStar[i][1] == 1)
+				{
+					isStar[i][1] = 0;	//star dissapears
+					starsCollected += 1;
+				}
+			}
 	}
 }
 
@@ -675,9 +804,9 @@ void StarDrawing(float starX, float starY, float starZ, int index)
 
 
 		//filling stars collecting table
-		for (int i = starX - 3; i < starX + 3; i++)
+		for (int i = starX - 5; i < starX + 5; i++)
 		{
-			for (int j = starZ - 3; j < starZ + 3; j++)
+			for (int j = starZ - 5; j < starZ + 5; j++)
 			{
 				stars[i + 300][j + 300] = 333;	//changing Y coordinate for stars attacking
 			}
@@ -704,7 +833,6 @@ void ufoDrawing()
 			ufoPos[index][1] = coordinates.vertices[ufoPos[index][0]][ufoPos[index][2]] + 12;
 		}
 
-		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();	//stacking the object
 		glColor3f(7.0, 0.1, 0.5);
 		glTranslatef(ufoPos[index][0], 12, ufoPos[index][2]);	//moving it back
@@ -720,10 +848,11 @@ void ufosAttacks()
 {
 	for (int index = 0; index < numberOfUfos; index++)
 	{
-		if (abs(ufoPos[index][0] - backWheels[0]) < 15 && abs(ufoPos[index][2] - backWheels[2]) < 15 || abs(ufoPos[index][0] - frontWheels[0]) < 15 && abs(ufoPos[index][2] - frontWheels[2]) < 15)
+		if (abs(ufoPos[index][0] - backWheels[0]) < 15 && abs(ufoPos[index][2] - backWheels[2]) < 15 || abs(ufoPos[index][0] - frontWheels[0]) < 15 && abs(ufoPos[index][2] - frontWheels[2]) < 15 || 
+			(abs(ufoPos[index][0] - backWheels[0]) < 15 && abs(ufoPos[index][2] - backWheels[2]) < 15 && abs(ufoPos[index][0] - frontWheels[0]) < 15 && abs(ufoPos[index][2] - frontWheels[2])))
 		{
 			hp -= 1;
-			ufoTime = 11;
+			ufoTime = 6;
 		}
 	}
 }
@@ -742,19 +871,25 @@ void renderScene(void)
 
 	// Set the camera
 	gluLookAt(cameraPos[0], cameraPos[1], cameraPos[2], x + frontWheels[0], y + cameraPos[1] - 25, z + frontWheels[2], 0.0f, 1.0f, 0.0f);
+	
+	if (texturesFlag == 1)
+	{
+		//rendering ground with textures
+		glColor3f(1.0, 1.0, 1.0);
+		init(stbi_load("stone.jpg", &width, &height, &nrChannels, 0));
+		textures.DrawT();
+		glDeleteTextures(1, &textureName);
+	}
+	else
+	{
+		//rendering ground without textures
+		glColor3f(1.0, 1.0, 1.0);
+		textures.DrawG();
+	}
 
-	
-	//rendering ground with textures
-	glColor3f(1.0, 1.0, 1.0);
-	init(stbi_load("stone.jpg", &width, &height, &nrChannels, 0));
-	textures.DrawT();
-	glDeleteTextures(1, &textureName);
-	
-	//rendering object with textures
+	//rendering object without textures
 	glColor3f(0.5, 0.5, 0.5);
 	icosphere.Draw();
-	glDeleteTextures(1, &textureName);
-
 
 	//rendering object without textures
 	glColor3f(0, 0, 0);
@@ -790,30 +925,49 @@ void renderScene(void)
 	}
 	else
 	{
-		if (abs(timer - max_time) < 0.01)
+		if (endRound == 1)
 		{
-			numberOfStars = 0;
+			if (sortOnce == 0)
+			{
+				if (level > 6 && starsCollected == numberOfStars && timer > 0)
+				{
+					results[level][3] = timer;
+					sortResults();
+				}
+				else if (level > 0 && level < 7 && starsCollected != 0)
+				{
+					results[level][0] = starsCollected;
+					sortResults();
+				}
 
-			starsPos.resize(numberOfStars, vector<int>(3));
-			isStar.resize(numberOfStars, vector<int>(2));
+				cout << level << endl;
+				for (int j = 0; j < 4; j++)
+				{
+					cout << results[level][j] << " ";
+				}
+				cout << endl;
+			}
 
-			pos_x = 250;
+			pos_x = 300;
 			pos_z = 0;
-			pos_y = 2.2;
-
+			pos_y = 12.2;
+			frontWheels[0] = 310;
 			//calculating the camera position
-			cameraPos[0] = pos_x + cos(rover_angle)  + cameraX;
-			cameraPos[2] = pos_z - sin(rover_angle)  + cameraZ;
-			cameraPos[1] = pos_y + 22;
-			x = 300;
+			cameraPos[0] = 300;
+			cameraPos[2] = 0;
+			cameraPos[1] = 24.2 ;
+
 
 			glPushMatrix();
-			print(frontWheels[0], frontWheels[1] + 15, frontWheels[2], "Tu beda wyniki    ");
+			print(x + frontWheels[0], y + cameraPos[1] - 21, z + frontWheels[2], "Your score:    ");
+			printT(x + frontWheels[0], y + cameraPos[1] - 16, z + frontWheels[2], "Martian Rover    ");
+			printT(x + frontWheels[0], y + cameraPos[1] - 17, z + frontWheels[2] - 2, "Press right mouse button to open menu    ");
+			printT(x + frontWheels[0], y + cameraPos[1] - 18, z + frontWheels[2], "Game modes:    ");
+			printT(x + frontWheels[0], y + cameraPos[1] - 19, z + frontWheels[2] - 10, "Beat the time records in stars collecting    ");
+			printT(x + frontWheels[0], y + cameraPos[1] - 19, z + frontWheels[2] + 5, "Collect as much stars as you can in limited time     ");
 			//tutaj zaj¹æ siê tekstem, main strona, dodaæ wyœwietlanie wyników
-
-			//dodatkowo do modów trzeba dodaæ UFO i zapisywanie wyników
+			//dodatkowo do modów trzeba dodaæ zapisywanie wyników
 			glPopMatrix();
-
 		}
 		else
 		{
@@ -831,11 +985,6 @@ void renderScene(void)
 			{
 				pos_x += cos(rover_angle) * speed;	//calculating the new X coordinate
 				pos_z += -sin(rover_angle) * speed;	//calculating the new Z coordinate
-
-				if (pos_x < -285)	pos_x = -285;
-				else if (pos_x > 285)	pos_x = 285;
-				else if (pos_z < -285)	pos_z = -285;
-				else if (pos_z > 285)	pos_z = 285;
 
 				glPushMatrix();	//stacinkg the object
 				glTranslatef(pos_x, 0, pos_z);	//moving the rotation center to rover
@@ -912,7 +1061,7 @@ void renderScene(void)
 		ufosAttacks();
 		ufostring = "HP: " + to_string(hp);
 		hpText = ufostring.c_str();
-		if (hp == 0)	timer = max_time;
+		if (hp == 0)	endRound = 1;
 	}
 
 

@@ -21,6 +21,7 @@ public:
 	Interpreter(string filename);//Read function
 	void DrawT();//Drawing function for objects with textures
 	void Draw();//Drawing function
+	void DrawG();//Drawing ground without textures
 	void DrawObj(float posX, float posY, float posZ);//Star drawing function
 private:
 	vector<vector<GLfloat>> v;//Store vertex (x,y,z) coordinates
