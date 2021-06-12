@@ -265,7 +265,7 @@ void processmodesCamera(int option)
 		case DISTANCE:
 			timerY = 2.0;
 			cameraX = 60.0;
-			cameraZ = -0.5;
+			cameraZ = - 0.5;
 			break;
 		}
 	}
@@ -549,17 +549,17 @@ void print(float x, float y, float z, const char* text)
 {
 	const char* c;
 	glColor3d(1.0, 0.0, 0.0);
-	glRasterPos3f(x, y, z);
+	glRasterPos3f(x, y, z-1);
 	for (c = text; *(c + 4) != '\0'; c++)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
 	}
-	glRasterPos3f(x, y - 2, z);
+	glRasterPos3f(x, y - 2, z-1);
 	for (c = starsC; *(c) != '\0'; c++)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
 	}
-	glRasterPos3f(x, y - 4, z);
+	glRasterPos3f(x, y - 4, z-1);
 	for (c = hpText; *(c + 7) != '\0'; c++)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
@@ -573,6 +573,18 @@ void printT(float x, float y, float z, const char* text)
 	glColor3d(1.0, 1.0, 1.0);
 	glRasterPos3f(x, y, z);
 	for (c = text; *(c + 4) != '\0'; c++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
+	}
+}
+
+
+void printR(float x, float y, float z, const char* text)
+{
+	const char* c;
+	glColor3d(1.0, 1.0, 1.0);
+	glRasterPos3f(x, y, z);
+	for (c = text; *(c + 7) != '\0'; c++)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
 	}
@@ -596,7 +608,7 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 	case 's':
 		if (pause == 0 && endRound == 0)
 		{
-			if (speed > -0.75)	speed -= 0.02;	//decreasing speed till limit when moveing forward, or increasing speed when moving backwards
+			if (speed > - 0.75)	speed -= 0.02;	//decreasing speed till limit when moveing forward, or increasing speed when moving backwards
 			if (turning_angle == 0)	//when turning angle is 0
 			{
 				rotation = 0;	//rover is not rotating
@@ -629,7 +641,6 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 		break;
 	case 27:
 		glutDestroyMenu(mainMenu);
-		glutDestroyMenu(modesTime);
 		exit(0);
 		break;
 	}
@@ -838,7 +849,7 @@ void ufoDrawing()
 		glTranslatef(ufoPos[index][0], 12, ufoPos[index][2]);	//moving it back
 		glRotatef( 2 * antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the ufo
 		glTranslatef(-ufoPos[index][0], 12, -ufoPos[index][2]);	//moving the rotation center to ufo
-		ufo.DrawObj(ufoPos[index][0], 12, ufoPos[index][2]);	//rendering the ufo
+		ufo.DrawObj(ufoPos[index][0], 12, ufoPos[index][2]);	//rendering the ufos
 		glPopMatrix();	//unstacinkg the object
 	}
 }
@@ -858,6 +869,91 @@ void ufosAttacks()
 }
 
 
+void menuRendering()
+{
+	pos_x = 400;
+	pos_z = 0;
+	pos_y = 12.2;
+	//calculating the camera position
+	cameraPos[0] = 400;
+	cameraPos[2] = - 0.5;
+	cameraPos[1] = 17;
+
+	glPushMatrix();
+	if (level != 0)	print( 400, y - 4, z -1.5, "Your score:    ");
+	printT( 400, y + 5.5, z - 2.5, "Martian Rover    ");
+	printT( 400, y + 4, z - 5.5, "Press right mouse button to open menu    ");
+	printT( 400, y + 2, z - 3, "Press 'p' to pause    ");
+	printT( 400, y + 0, z - 3, "Press 'Esc' to exit    ");
+	printT( 400, y - 2, z - 2.5, "Game modes:    ");
+	printT( 400, y - 4, z - 19.5, "Beat the time records in stars collecting!    ");
+	printT( 400, y - 4, z + 5, "Collect as much stars as you can in limited time!     ");
+	printT( 400, y - 5, z - 18, "Normal levels TOP 3 times:    ");
+	printT( 400, y - 5, z + 7, "Normal levels TOP 3 results:    ");
+	printT( 400, y - 6, z - 19, "Level 1:    ");
+	printT( 400, y - 6, z + 6.5, "Level 1:    ");
+	printT( 400, y - 6, z - 15, "Level 2:    ");
+	printT( 400, y - 6, z + 10.5, "Level 2:    ");
+	printT( 400, y - 6, z - 11, "Level 3:    ");
+	printT( 400, y - 6, z + 14.5, "Level 3:    ");
+	printT( 400, y - 11, z - 20, "Levels with dangerous enemies TOP 3 times:    ");
+	printT( 400, y - 11, z + 5, "Levels with dangerous enemies TOP 3 results:    ");
+	printT( 400, y - 12, z - 19, "Level 1:    ");
+	printT( 400, y - 12, z + 6.5, "Level 1:    ");
+	printT( 400, y - 12, z - 15, "Level 2:    ");
+	printT( 400, y - 12, z + 10.5, "Level 2:    ");
+	printT( 400, y - 12, z - 11, "Level 3:    ");
+	printT( 400, y - 12, z + 14.5, "Level 3:    ");
+
+	for (int j = 0; j < 3; j++)
+	{
+		resultsS = "1. " + to_string(results[7 + j][0]);
+		resultsC = resultsS.c_str();
+		printT( 400, y - 7 - j, z - 19, resultsC);
+		resultsS = "2. " + to_string(results[7 + j][1]);
+		resultsC = resultsS.c_str();
+		printT( 400, y - 7 - j, z - 15, resultsC);
+		resultsS = "3. " + to_string(results[7 + j][2]);
+		resultsC = resultsS.c_str();
+		printT( 400, y - 7 - j, z - 11, resultsC);
+
+
+		resultsS = "1. " + to_string(results[10 + j][0]);
+		resultsC = resultsS.c_str();
+		printT( 400, y - 13 - j, z - 19, resultsC);
+		resultsS = "2. " + to_string(results[10 + j][1]);
+		resultsC = resultsS.c_str();
+		printT( 400, y - 13 - j, z - 15, resultsC);
+		resultsS = "3. " + to_string(results[10 + j][2]);
+		resultsC = resultsS.c_str();
+		printT( 400, y - 13 - j, z - 11, resultsC);
+
+
+
+		resultsS = "1.   " + to_string(results[1 + j][3]);
+		resultsC = resultsS.c_str();
+		printR(400, y - 7 - j, z + 6.5, resultsC);
+		resultsS = "2.   " + to_string(results[2 + j][2]);
+		resultsC = resultsS.c_str();
+		printR(400, y - 7 - j, z + 10.5, resultsC);
+		resultsS = "3.   " + to_string(results[3 + j][1]);
+		resultsC = resultsS.c_str();
+		printR(400, y - 7 - j, z + 14.5, resultsC);
+
+		resultsS = "1.   " + to_string(results[4 + j][3]);
+		resultsC = resultsS.c_str();
+		printR(400, y - 13 - j, z + 6.5, resultsC);
+		resultsS = "2.   " + to_string(results[4 + j][2]);
+		resultsC = resultsS.c_str();
+		printR(400, y - 13 - j, z + 10.5, resultsC);
+		resultsS = "3.   " + to_string(results[4 + j][1]);
+		resultsC = resultsS.c_str();
+		printR(400, y - 13 - j, z + 14.5, resultsC);
+	}
+
+	glPopMatrix();
+}
+
 void renderScene(void)
 {
 	// Clear Color and Depth Buffers
@@ -869,8 +965,16 @@ void renderScene(void)
 	rover_angle += angular_speed;	//calculating the angle by angular speed
 
 
-	// Set the camera
-	gluLookAt(cameraPos[0], cameraPos[1], cameraPos[2], x + frontWheels[0], y + cameraPos[1] - 25, z + frontWheels[2], 0.0f, 1.0f, 0.0f);
+	if (endRound == 0)
+	{
+		// Set the camera
+		gluLookAt(cameraPos[0], cameraPos[1], cameraPos[2], x + frontWheels[0], y + cameraPos[1] - 25, z + frontWheels[2], 0.0f, 1.0f, 0.0f);
+	}
+	else
+	{
+		// Set the camera
+		gluLookAt(385, 10, - 0.5, 400, 10, - 0.5, 0.0f, 1.0f, 0.0f);
+	}
 	
 	if (texturesFlag == 1)
 	{
@@ -939,35 +1043,9 @@ void renderScene(void)
 					results[level][0] = starsCollected;
 					sortResults();
 				}
-
-				cout << level << endl;
-				for (int j = 0; j < 4; j++)
-				{
-					cout << results[level][j] << " ";
-				}
-				cout << endl;
 			}
-
-			pos_x = 300;
-			pos_z = 0;
-			pos_y = 12.2;
-			frontWheels[0] = 310;
-			//calculating the camera position
-			cameraPos[0] = 300;
-			cameraPos[2] = 0;
-			cameraPos[1] = 24.2 ;
-
-
-			glPushMatrix();
-			print(x + frontWheels[0], y + cameraPos[1] - 21, z + frontWheels[2], "Your score:    ");
-			printT(x + frontWheels[0], y + cameraPos[1] - 16, z + frontWheels[2], "Martian Rover    ");
-			printT(x + frontWheels[0], y + cameraPos[1] - 17, z + frontWheels[2] - 2, "Press right mouse button to open menu    ");
-			printT(x + frontWheels[0], y + cameraPos[1] - 18, z + frontWheels[2], "Game modes:    ");
-			printT(x + frontWheels[0], y + cameraPos[1] - 19, z + frontWheels[2] - 10, "Beat the time records in stars collecting    ");
-			printT(x + frontWheels[0], y + cameraPos[1] - 19, z + frontWheels[2] + 5, "Collect as much stars as you can in limited time     ");
-			//tutaj zaj¹æ siê tekstem, main strona, dodaæ wyœwietlanie wyników
-			//dodatkowo do modów trzeba dodaæ zapisywanie wyników
-			glPopMatrix();
+			hp = 0;
+			menuRendering();
 		}
 		else
 		{
