@@ -152,6 +152,9 @@ bool sortOnce = 0;
 const char* resultsC = "0";
 string resultsS;
 
+//for reseting
+int old_ufos = 0;
+int old_stars = 0;
 
 
 void loadFromFile()
@@ -238,6 +241,39 @@ void processMenuStatus(int status, int x, int y)
 }
 
 
+void settingPositions()
+{
+	for (int i = 0; i < numberOfUfos; ++i)
+	{
+		randomX = ((250 + 250) * ((float)rand() / RAND_MAX)) - 250;
+		randomZ = ((250 + 250) * ((float)rand() / RAND_MAX)) - 250;
+		ufoPos[i][0] = randomX;
+		ufoPos[i][2] = randomZ;
+		ufoPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
+		ufoAttacks[i][0] = random;
+		if (random == 0) random = -1;
+		random = (rand() * 2 / RAND_MAX);
+		if (random == 0) random = -1;
+		ufoAttacks[i][1] = random;
+	}
+	for (int i = 0; i < numberOfStars; ++i)
+	{
+		randomX = ((250 + 250) * ((float)rand() / RAND_MAX)) - 250;
+		randomZ = ((250 + 250) * ((float)rand() / RAND_MAX)) - 250;
+		while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
+		{
+			randomX = ((250 + 250) * ((float)rand() / RAND_MAX)) - 250;
+			randomZ = ((250 + 250) * ((float)rand() / RAND_MAX)) - 250;
+		}
+		starsPos[i][0] = randomX;
+		starsPos[i][2] = randomZ;
+		starsPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
+		isStar[i][0] = i;
+		isStar[i][1] = 1;
+	}
+}
+
+
 void processMainMenu(int option)
 {
 	switch (option)
@@ -269,12 +305,25 @@ void processMainMenu(int option)
 		else	timer = 0;
 		starsCollected = 0;
 
+		if (numberOfUfos != 1)
+		{
+			numberOfUfos = old_ufos;
+			numberOfStars = old_stars;
+		}
+		settingPositions();
+
 		for (int i = 0; i < numberOfStars; i++)
 		{
 			isStar[i][1] = 1;
 		}
 		break;
 	case MAINMENU:
+		//drawing one star on main page
+		isStar[0][0] = 0;
+		isStar[0][1] = 1;
+		starsPos[0][0] = 408;
+		starsPos[0][2] = -20;
+		starsPos[0][1] = -13;
 		endRound = 1;
 		break;
 	case TEXTURING:
@@ -302,39 +351,6 @@ void processmodesCamera(int option)
 			cameraZ = - 0.5;
 			break;
 		}
-	}
-}
-
-
-void settingPositions()
-{
-	for (int i = 0; i < numberOfUfos; ++i)
-	{
-		randomX = ((250 + 250) * ((float)rand() / RAND_MAX)) - 250;
-		randomZ = ((250 + 250) * ((float)rand() / RAND_MAX)) - 250;
-		ufoPos[i][0] = randomX;
-		ufoPos[i][2] = randomZ;
-		ufoPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
-		ufoAttacks[i][0] = random;
-		if (random == 0) random = -1;
-		random = (rand() * 2 / RAND_MAX);
-		if (random == 0) random = -1;
-		ufoAttacks[i][1] = random;
-	}
-	for (int i = 0; i < numberOfStars; ++i)
-	{
-		randomX = ((250 + 250) * ((float)rand() / RAND_MAX)) - 250;
-		randomZ = ((250 + 250) * ((float)rand() / RAND_MAX)) - 250;
-		while (coordinates.vertices[int(randomX)][int(randomZ)] == 600)
-		{
-			randomX = ((250 + 250) * ((float)rand() / RAND_MAX)) - 250;
-			randomZ = ((250 + 250) * ((float)rand() / RAND_MAX)) - 250;
-		}
-		starsPos[i][0] = randomX;
-		starsPos[i][2] = randomZ;
-		starsPos[i][1] = coordinates.vertices[int(randomX)][int(randomZ)] + 12;
-		isStar[i][0] = i;
-		isStar[i][1] = 1;
 	}
 }
 
@@ -389,6 +405,8 @@ void processSpeedLevels(int option)
 	old_timer = timer;
 	timerMode = 0;
 	min_time = 0;
+	old_ufos = numberOfUfos;
+	old_stars = numberOfStars;
 
 	ufoPos.resize(numberOfUfos, vector<int>(3));
 	ufoAttacks.resize(numberOfUfos, vector<int>(2));
@@ -448,6 +466,9 @@ void processTimeLevels(int option)
 	timerMode = 1;
 	timer = 0;
 	old_timer = 0;
+	old_ufos = numberOfUfos;
+	old_stars = numberOfStars;
+
 
 	ufoPos.resize(numberOfUfos, vector<int>(3));
 	ufoAttacks.resize(numberOfUfos, vector<int>(2));
@@ -564,17 +585,17 @@ void print(float x, float y, float z, const char* text)
 	const char* c;
 	glColor3d(1.0, 0.0, 0.0);
 	glRasterPos3f(x, y, z-1);
-	for (c = text; *(c + 4) != '\0'; c++)
+	for (c = text; *(c + 4) != '\0'; c++)	//writing text for time
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
 	}
 	glRasterPos3f(x, y - 2, z-1);
-	for (c = starsC; *(c) != '\0'; c++)
+	for (c = starsC; *(c) != '\0'; c++)	//writing amount of stars
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
 	}
 	glRasterPos3f(x, y - 4, z-1);
-	for (c = hpText; *(c + 7) != '\0'; c++)
+	for (c = hpText; *(c + 7) != '\0'; c++)	//writing HP
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
 	}
@@ -633,7 +654,7 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 	case 'd':
 		if (pause == 0 && endRound == 0)
 		{
-			turning_angle += 4;	//increasing turning angle by 8 degrees
+			turning_angle += 8;	//increasing turning angle by 8 degrees
 			rotation = 0.8 / tan(turning_angle / (180 / GL_PI));	//calculating the rotation of rover
 			angular_speed = -speed / rotation;	//calculating the angular_speed
 		}
@@ -641,7 +662,7 @@ void processKeyboardKeys(unsigned char key, int x, int y)
 	case 'a':
 		if (pause == 0 && endRound == 0)
 		{
-			turning_angle -= 4;	//decreasing turning angle by 8 degrees
+			turning_angle -= 8;	//decreasing turning angle by 8 degrees
 			rotation = 0.8 / tan(turning_angle / (180 / GL_PI));	//calculating the rotation of rover
 			angular_speed = -speed / rotation;	//calculating the angular_speed
 		}
@@ -816,7 +837,7 @@ void StarDrawing()
 {
 	for (int i = 0; i < numberOfStars; i++)
 	{
-		if (isStar[isStar[i][0]][1] == 1)	//if star wasn't collected
+		if (isStar[i][1] == 1)	//if star wasn't collected
 		{
 			glMatrixMode(GL_MODELVIEW);
 			glPushMatrix();	//stacking the object
