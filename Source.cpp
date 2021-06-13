@@ -158,7 +158,7 @@ void loadFromFile()
 {
 	ifstream in;	//input stream
 	in.open("results.txt");	//opening file
-	for (int i = 0; i < 13; i++)
+	for (int i = 0; i < 12; i++)
 	{
 		for (int j = 0; j < 4; j++)
 		{
@@ -177,8 +177,8 @@ void saveToFile()
 	{
 		for (int j = 0; j < 4; j++)
 		{
-			out << results[i][j];	//saving results in array
-			out << " ";	//saving space in array, so floats doesnt stick
+				out << results[i][j];	//saving results in array
+				out << " ";	//saving space in array, so floats doesnt stick
 		}
 	}
 	out.close();	//closing file
@@ -196,6 +196,17 @@ void startvalues()
 	{
 		for (int j = -60; j <= -40; j++)	coordinates.vertices[i + 300][j + 300] = 600;
 	}
+
+	numberOfStars = 1;
+	//drawing one ufo on main page
+	ufoPos.resize(numberOfUfos, vector<int>(3));
+	ufoAttacks.resize(numberOfUfos, vector<int>(2));
+	//drawing one star on main page
+	isStar[0][0] = 0;
+	isStar[0][1] = 1;
+	starsPos[0][0] = 408;
+	starsPos[0][2] = -20;
+	starsPos[0][1] = -13;
 }
 
 
@@ -761,7 +772,6 @@ bool collisionDetection()
 }
 
 
-
 void starsCollecting()
 {
 	if (timerMode == 0 && starsCollected == numberOfStars)//if it's firstmode, and stars are all picked
@@ -885,10 +895,7 @@ void menuRendering()
 	cameraPos[1] = 17;
 
 	glPushMatrix();
-	
-
 	print(400, y - 4, z - 1.5, timerChars);
-
 	printT( 400, y + 6.5, z - 2.5, "Martian Rover    ");
 	printT( 400, y + 5, z - 5.5, "Press right mouse button to open menu    ");
 	printT( 400, y + 3, z - 3, "Press 'p' to pause    ");
@@ -913,34 +920,27 @@ void menuRendering()
 	printT( 400, y - 15, z - 20, "Level 3:    ");
 	printT( 400, y - 15, z + 6.5, "Level 3:    ");
 
-	for (int i = 0; i < 12; i++)
-	{
-		level = i;
-		sortResults();
-	}
-
 	for (int j = 0; j < 3; j++)
 	{
-		resultsS = "1. " + to_string(results[6 + j][2]);
+		resultsS = "1. " + to_string(results[6 + j][3]);
 		resultsC = resultsS.c_str();
 		printT( 400, y - 7 - j, z - 17, resultsC);
-		resultsS = "2. " + to_string(results[6 + j][1]);
+		resultsS = "2. " + to_string(results[6 + j][2]);
 		resultsC = resultsS.c_str();
 		printT( 400, y - 7 - j, z - 13, resultsC);
-		resultsS = "3. " + to_string(results[6 + j][0]);
+		resultsS = "3. " + to_string(results[6 + j][1]);
 		resultsC = resultsS.c_str();
 		printT( 400, y - 7 - j, z - 9, resultsC);
 
-		resultsS = "1. " + to_string(results[9 + j][2]);
+		resultsS = "1. " + to_string(results[9 + j][3]);
 		resultsC = resultsS.c_str();
 		printT( 400, y - 13 - j, z - 17, resultsC);
-		resultsS = "2. " + to_string(results[9 + j][1]);
+		resultsS = "2. " + to_string(results[9 + j][2]);
 		resultsC = resultsS.c_str();
 		printT( 400, y - 13 - j, z - 13, resultsC);
-		resultsS = "3. " + to_string(results[9 + j][0]);
+		resultsS = "3. " + to_string(results[9 + j][1]);
 		resultsC = resultsS.c_str();
 		printT( 400, y - 13 - j, z - 9, resultsC);
-
 
 		resultsS = "1.   " + to_string(results[0 + j][0]);
 		resultsC = resultsS.c_str();
@@ -961,17 +961,16 @@ void menuRendering()
 		resultsS = "3.   " + to_string(results[3 + j][2]);
 		resultsC = resultsS.c_str();
 		printR(400, y - 13 - j, z + 17.5, resultsC);
-	}
 
+	}
+	glPopMatrix();
 	glPushMatrix();	//stacking the object
-	glColor3f(7.0, 0.1, 0.5);
+	glColor3f(7.0, 0.1, 0.5);	//pink colour
 	glTranslatef(ufoPos[0][0], ufoPos[0][1], ufoPos[0][2]);	//moving it back
 	glRotatef(2 * antenna_angle * (180 / GL_PI), 0, 1, 0);	//rotating the ufo
 	glTranslatef(-ufoPos[0][0], -ufoPos[0][1], -ufoPos[0][2]);	//moving the rotation center to ufo
 	ufo.DrawObj(ufoPos[0][0], ufoPos[0][1], ufoPos[0][2]);	//rendering the ufos
 	glPopMatrix();	//unstacinkg the object
-
-	glPopMatrix();
 }
 
 
@@ -1028,11 +1027,9 @@ void renderScene(void)
 	starsCollecting();	//checking if there is star collected
 
 	//rendering all stars
-
 	StarDrawing();
 
 
-	
 	if (pause == 1)
 	{
 		glPushMatrix();
@@ -1055,22 +1052,20 @@ void renderScene(void)
 			{
 				if (level > 5 && starsCollected == numberOfStars && timer > 0)	//if user succeed in first mode
 				{
-					results[level][3] = timer;	//result is saved in results array
+					results[level][0] = timer;	//result is saved in results array
 					sortResults();	//results array is being sorted
 				}
 				else if (level < 6 && starsCollected != 0)	//if user succeed in second mode
 				{
-					results[level][0] = starsCollected;	//result is saved in results array
+					results[level][3] = starsCollected;	//result is saved in results array
 					sortResults();	//results array is being sorted
 				}
-
 				//drawing one star on main page
 				isStar[0][0] = 0;
 				isStar[0][1] = 1;
 				starsPos[0][0] = 408;
 				starsPos[0][2] = -20;
 				starsPos[0][1] = -13;
-
 				numberOfUfos = 1;
 				//drawing one ufo on main page
 				ufoPos.resize(numberOfUfos, vector<int>(3));
